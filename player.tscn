@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://c5wlatravmab7"]
+
+[ext_resource type="Script" path="res://CharacterBody3D.gd" id="1_8nr0s"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f6csk"]
+size = Vector3(0.8, 0.25, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6hctq"]
+albedo_color = Color(0.996078, 0.431373, 0.0705882, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_mr05l"]
+size = Vector3(0.8, 1, 0.25)
+
+[node name="Player" type="CharacterBody3D"]
+rotation_order = 4
+collision_mask = 14
+script = ExtResource("1_8nr0s")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_f6csk")
+
+[node name="PlaceholderBody" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_6hctq")
+mesh = SubResource("PrismMesh_mr05l")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0.3, -1)
