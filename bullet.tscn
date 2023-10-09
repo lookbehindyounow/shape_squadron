@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://dfmwil5ymnpnw"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_icqnq"]
+top_radius = 0.01
+bottom_radius = 0.01
+height = 0.05
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6cppn"]
+albedo_color = Color(1, 0.576471, 0, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_jqlor"]
+height = 0.05
+radius = 0.01
+
+[node name="RigidBody3D" type="RigidBody3D"]
+collision_layer = 4
+collision_mask = 0
+gravity_scale = 0.0
+linear_damp_mode = 1
+angular_damp_mode = 1
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_icqnq")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_6cppn")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CylinderShape3D_jqlor")
