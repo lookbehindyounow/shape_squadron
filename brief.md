@@ -26,3 +26,4 @@ It's gonna be a flying/dogfighting game in 3d which I'm making in godot & the go
 - music
 - sound effects
 - yaw
+- radar or a pointer on the HUD for off screen enemies
