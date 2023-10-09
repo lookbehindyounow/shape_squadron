@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://bk76cujr3ye4k"]
+[gd_scene load_steps=12 format=3 uid="uid://bk76cujr3ye4k"]
 
 [ext_resource type="PackedScene" uid="uid://c5wlatravmab7" path="res://player.tscn" id="1_uil6o"]
 [ext_resource type="Environment" uid="uid://ln4cxp42sp5m" path="res://environment.tres" id="3_cymjq"]
 [ext_resource type="Script" path="res://PlaceholderObstacles.gd" id="3_o86si"]
+[ext_resource type="Script" path="res://UI.gd" id="4_41i2s"]
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_qjwdv"]
 
@@ -52,3 +53,10 @@ script = ExtResource("3_o86si")
 [node name="MultiMeshInstance3d" type="MultiMeshInstance3D" parent="PlaceholderObstacles"]
 material_override = SubResource("StandardMaterial3D_8xpy8")
 multimesh = SubResource("MultiMesh_aeni4")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_41i2s")
