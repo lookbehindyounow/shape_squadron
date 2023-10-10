@@ -12,7 +12,7 @@ albedo_color = Color(1, 0.576471, 0, 1)
 height = 0.05
 radius = 0.01
 
-[node name="RigidBody3D" type="RigidBody3D"]
+[node name="Bullet" type="RigidBody3D" groups=["bullets"]]
 collision_layer = 4
 collision_mask = 0
 gravity_scale = 0.0
