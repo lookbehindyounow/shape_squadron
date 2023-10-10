@@ -69,8 +69,3 @@ switch_camera={
 3d_physics/layer_2="enemies"
 3d_physics/layer_3="bullets/missiles"
 3d_physics/layer_4="world"
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"

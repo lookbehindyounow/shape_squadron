@@ -7,6 +7,8 @@ height = 0.05
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6cppn"]
 albedo_color = Color(1, 0.576471, 0, 1)
+emission_enabled = true
+emission = Color(1, 0.576471, 0, 1)
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_jqlor"]
 height = 0.05

@@ -65,9 +65,9 @@ func _physics_process(delta):
 		if rolling_right:
 			transform.basis=transform.basis.rotated(transform.basis.z,delta)
 		if pitching_up:
-			transform.basis=transform.basis.rotated(transform.basis.x,-delta)
+			transform.basis=transform.basis.rotated(transform.basis.x,-0.75*delta)
 		if pitching_down:
-			transform.basis=transform.basis.rotated(transform.basis.x,delta)
+			transform.basis=transform.basis.rotated(transform.basis.x,0.75*delta)
 	velocity=transform.basis.z*speed
 	move_and_slide()
 	

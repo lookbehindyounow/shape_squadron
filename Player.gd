@@ -40,6 +40,6 @@ func _physics_process(delta):
 func shoot():
 	var bullet=bullet_scene.instantiate()
 	bullet.global_transform=self.global_transform
-	bullet.position+=self.transform.basis.z
+	bullet.position+=self.transform.basis.z+0.2*self.transform.basis.y
 	bullet.linear_velocity=transform.basis.z*25
 	get_node("/root/Main").add_child(bullet)
