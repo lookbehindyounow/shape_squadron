@@ -47,5 +47,5 @@ func shoot():
 	var bullet=bullet_scene.instantiate()
 	bullet.global_transform=self.global_transform
 	bullet.position+=self.transform.basis.z+0.2*self.transform.basis.y
-	bullet.linear_velocity=transform.basis.z*50
+	bullet.linear_velocity=transform.basis.z*100
 	get_node("/root/Main").add_child(bullet)

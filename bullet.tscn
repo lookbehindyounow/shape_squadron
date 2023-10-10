@@ -1,4 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://dfmwil5ymnpnw"]
+[gd_scene load_steps=5 format=3 uid="uid://dfmwil5ymnpnw"]
+
+[ext_resource type="Script" path="res://bullet.gd" id="1_d5y8p"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_icqnq"]
 top_radius = 0.01
@@ -20,6 +22,7 @@ collision_mask = 0
 gravity_scale = 0.0
 linear_damp_mode = 1
 angular_damp_mode = 1
+script = ExtResource("1_d5y8p")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
