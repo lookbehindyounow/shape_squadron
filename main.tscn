@@ -80,7 +80,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 14)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.939693, -0.241845, -0.241845, 0, -0.707107, 0.707107, -0.34202, -0.664463, -0.664463, 0, 50, 0)
-light_energy = 0.4
 
 [connection signal="hit" from="Player" to="UI" method="_on_hit"]
 [connection signal="hit" from="Enemy" to="UI" method="_on_hit"]
