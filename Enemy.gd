@@ -1,95 +1,63 @@
 extends CharacterBody3D
+var Jet=preload("res://JetMethods.gd")
 const acceleration=2
 const top_speed=10
 var speed=10
-var bullet_scene=preload("res://bullet.tscn")
-var chillin=false # could maybe turn into state:enum
-var player_o_clock=0
 var hits_taken=0
 var crashes=0
 signal hit
 var cooldown=0
+var target_o_clock=0
 
+var chillin=false # for testing
 func _unhandled_input(event):
-	if event.keycode==KEY_V && event.pressed:
-		chillin=not chillin
+	if event.keycode==KEY_V:
+		if event.pressed:
+			chillin=not chillin
+
+# could maybe have state:enum determined randomly
+
+#func _ready():
+#	var Jet=get_node("/root/Jet")
 
 func _physics_process(delta):
 	var accelerating=false
 	var decelerating=false
-	var rolling_left=false
-	var rolling_right=false
-	var pitching_up=false
-	var pitching_down=false
+	var rolling=0
+	var pitching=0
 	var shooting=false
 	
-	# same calculation below as in UI.gd finding enemies & marking them on the HUD
-	var player_pos=get_node("/root/Main/Player").position
-	var tracker_plane=Plane(position,position+transform.basis.z,player_pos)
-	player_o_clock=tracker_plane.normal.signed_angle_to(transform.basis.x,-transform.basis.z)
-	
-	if (player_pos-position).normalized().dot(transform.basis.z)>0.966: # player almost directly infront (0.966=cos(15deg), 15deg angle to forward is 30deg cone of violence)
-		shooting=true
-#	if randf()<0.1*delta:
-#		chillin=not(chillin)
-	if not chillin:
-		# could maybe reduce code here by using positive/negative dot products (against all transform basis axes) to figure out which way to go
-		# but could also make enemy pitch & roll amount depend on player o'clock angle for smoothness, would be like analogue controls for player
-		if abs(player_o_clock)>PI/20 && abs(player_o_clock)<0.95*PI: # if player not at top or bottom centre of clock face
-			if abs(player_o_clock)<2*PI/3: # player in top 2/3 of clock face
-				if player_o_clock>0:# top-right
-					rolling_right=true
-				else: # top-left
-					rolling_left=true
-			elif abs(player_o_clock)>=2*PI/3: # player in bottom 1/3 of clock face
-				if player_o_clock>0: # bottom-right
-					rolling_left=true
-				else: # bottom-left
-					rolling_right=true
-
-		if abs(player_o_clock)<0.4*PI || abs(player_o_clock)>0.6*PI: # if player in top 2/5 or bottom 2/5 of clock face
-			if (player_pos-position).normalized().dot(transform.basis.y)>0: # player above
-				pitching_up=true
-			else: # player below
-				pitching_down=true
+	if chillin:
+		target_o_clock=Jet.track(transform,get_node("/root/Main/Player").position)
+		velocity=Vector3.ZERO
+	else:
+		var suggestions=Jet.autopilot(transform,get_node("/root/Main/Player").position)
+		target_o_clock=suggestions[0]
+		rolling=0.75*suggestions[1]
+		pitching=0.5*suggestions[2]
+		shooting=suggestions[3]
 	
 		if accelerating:
-			speed+=acceleration*delta
-			if speed>top_speed:
-				speed=top_speed
+			speed=min(speed+acceleration*delta,top_speed)
 		if decelerating:
-			speed-=acceleration*delta
-			if speed<-top_speed:
-				speed=-top_speed
-		if rolling_left:
-			transform.basis=transform.basis.rotated(transform.basis.z,-delta)
-		if rolling_right:
-			transform.basis=transform.basis.rotated(transform.basis.z,delta)
-		if pitching_up:
-			transform.basis=transform.basis.rotated(transform.basis.x,-0.75*delta)
-		if pitching_down:
-			transform.basis=transform.basis.rotated(transform.basis.x,0.75*delta)
-	velocity=transform.basis.z*speed
+			speed=min(speed-acceleration*delta,top_speed)
+		# could also make pitch & roll depend on target o'clock or dot product navigation from autopilot if I get into that
+		# both options would look more like analogue controls for player
+		transform.basis=Jet.turn(transform.basis,rolling,pitching,delta)
+		velocity=transform.basis.z*speed
 	move_and_slide()
 	
 	if shooting:
 		if cooldown>0.1:
-			shoot()
+			Jet.shoot(self)
 			cooldown=0
 		else:
 			cooldown+=delta
 	
+	var collisions=[]
 	for i in range(get_slide_collision_count()):
-		if get_slide_collision(i).get_collider().is_in_group("bullets"):
-			get_slide_collision(i).get_collider().queue_free()
+		if Jet.collide(get_slide_collision(i).get_collider()):
 			hits_taken+=1
 		else:
 			crashes+=1
 		hit.emit()
-
-func shoot():
-	var bullet=bullet_scene.instantiate()
-	bullet.global_transform=self.global_transform
-	bullet.position+=self.transform.basis.z
-	bullet.linear_velocity=transform.basis.z*100
-	get_node("/root/Main").add_child(bullet)

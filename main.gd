@@ -1,5 +1,7 @@
 extends Node
 
+var bullet_scene=preload("res://bullet.tscn")
+
 func _ready():
 	$Player/Camera3D.current==true
 
