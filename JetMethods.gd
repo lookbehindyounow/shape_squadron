@@ -42,8 +42,8 @@ static func shoot(shooter):
 	bullet.global_transform=shooter.global_transform
 	bullet.position+shooter.transform.basis.z
 	if shooter.name=="Player":
-		bullet.position+=0.2*shooter.transform.basis.y
-	bullet.linear_velocity=shooter.transform.basis.z*100
+		bullet.position+=0.3*shooter.transform.basis.y
+	bullet.linear_velocity=shooter.transform.basis.z*200
 	shooter.get_node("/root/Main").add_child(bullet)
 
 static func collide(collider):

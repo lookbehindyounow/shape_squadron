@@ -11,14 +11,10 @@ var target_o_clock=0
 
 var chillin=false # for testing
 func _unhandled_input(event):
-	if event.keycode==KEY_V:
-		if event.pressed:
-			chillin=not chillin
+	if InputMap.event_is_action(event,"toggle_chillin") && event.pressed:
+		chillin=not chillin
 
 # could maybe have state:enum determined randomly
-
-#func _ready():
-#	var Jet=get_node("/root/Jet")
 
 func _physics_process(delta):
 	var accelerating=false
@@ -48,7 +44,7 @@ func _physics_process(delta):
 	move_and_slide()
 	
 	if shooting:
-		if cooldown>0.1:
+		if cooldown>0.05:
 			Jet.shoot(self)
 			cooldown=0
 		else:

@@ -9,11 +9,18 @@ signal hit
 var cooldown=0
 var target_o_clock=0
 
-#func _ready():
-#	var Jet=get_node("/root/Jet")
+var suggestions_on=true
+func _unhandled_input(event):
+	if InputMap.event_is_action(event,"toggle_suggestions") && event.pressed:
+		suggestions_on=not suggestions_on
 
 func _physics_process(delta):
-	target_o_clock=Jet.track(transform,get_node("/root/Main/Enemy").position)
+	if suggestions_on:
+		var suggestions=Jet.autopilot(transform,get_node("/root/Main/Enemy").position)
+		target_o_clock=suggestions[0]
+	else:
+		target_o_clock=Jet.track(transform,get_node("/root/Main/Enemy").position)
+		
 	if Input.is_action_pressed("accelerate"):
 		speed=min(speed+acceleration*delta,top_speed)
 	if Input.is_action_pressed("decelerate"):
@@ -33,7 +40,7 @@ func _physics_process(delta):
 	move_and_slide()
 	
 	if Input.is_action_pressed("shoot"):
-		if cooldown>0.1:
+		if cooldown>0.05:
 			Jet.shoot(self)
 			cooldown=0
 		else:

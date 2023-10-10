@@ -23,7 +23,7 @@ func _process(delta):
 	enemy_icon.position=Vector2(screen_dimensions/2)+((screen_dimensions.y/2.2)*Vector2.UP.rotated(HUD_angle))
 
 func _unhandled_input(event):
-	if InputMap.event_is_action(event,"switch_camera") && event.pressed:
+	if InputMap.event_is_action(event,"toggle_camera") && event.pressed:
 		enemy_camera=not enemy_camera
 
 func _on_hit():
