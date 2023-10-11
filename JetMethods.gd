@@ -7,16 +7,19 @@ static func get_HUD_angles(transform,target_pos):
 	
 	return [clock_face,forward_angle]
 
-static func track(transform,target_pos,target_velocity):
-	# bullet speed is 50
-	var targToPlayer_dot_targV=(transform.origin-target_pos).normalized().dot(target_velocity.normalized())
-	var sin_target_travel_angle=target_velocity.length()*sqrt(1-(targToPlayer_dot_targV**2))/50
-	var bullet_intercept_angle=PI-asin(sin_target_travel_angle)-acos(targToPlayer_dot_targV)
-	var target_travel=sin_target_travel_angle*(transform.origin-target_pos).length()/sin(bullet_intercept_angle)
-	var bullet_intercept_pos=target_pos+target_travel*target_velocity.normalized()
-	
+static func track(transform,target_pos,target_velocity,enemy=true):
 	var HUD_angles=get_HUD_angles(transform,target_pos)
-	var ahead_HUD_angles=get_HUD_angles(transform,bullet_intercept_pos)
+	var ahead_HUD_angles=null
+	
+	if enemy:
+		# bullet speed is 50
+		var targToPlayer_dot_targV=(transform.origin-target_pos).normalized().dot(target_velocity.normalized())
+		var sin_target_travel_angle=target_velocity.length()*sqrt(1-(targToPlayer_dot_targV**2))/50
+		var bullet_intercept_angle=PI-asin(sin_target_travel_angle)-acos(targToPlayer_dot_targV)
+		var target_travel=sin_target_travel_angle*(transform.origin-target_pos).length()/sin(bullet_intercept_angle)
+		var bullet_intercept_pos=target_pos+target_travel*target_velocity.normalized()
+	
+		ahead_HUD_angles=get_HUD_angles(transform,bullet_intercept_pos)
 	
 	return [HUD_angles,ahead_HUD_angles]
 

@@ -18,11 +18,11 @@ func _unhandled_input(event):
 func _physics_process(delta):
 	var player=get_node("/root/Main/Player")
 	var allies=[]+get_node("/root/Main").enemies
-	HUD_points=[Jet.track(transform,player.position,player.velocity)]
+	HUD_points=[Jet.track(transform,player.position,player.velocity)+[true]]
 	allies.erase(self)
 	if get_node("/root/Main").current_camera<=allies.size():
 		for ally in allies:
-			HUD_points.append(Jet.track(transform,ally.position,ally.velocity))
+			HUD_points.append(Jet.track(transform,ally.position,ally.velocity)+[false])
 	
 	if chillin:
 		velocity=Vector3.ZERO

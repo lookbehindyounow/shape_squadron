@@ -6,7 +6,7 @@ var speed=0
 var hits_taken=0
 var crashes=0
 var cooldown=0
-var HUD_points=[[[0,0],[0,0]]]
+var HUD_points=[[[0,0],[0,0],false]]
 
 var suggestions_on=false
 func _unhandled_input(event):
@@ -17,7 +17,7 @@ func _physics_process(delta):
 	var enemies=get_node("/root/Main").enemies
 	HUD_points=[]
 	for enemy in enemies:
-		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity))
+		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity)+[true])
 	
 	if suggestions_on:
 		var suggestions=Jet.autopilot(HUD_points[0])

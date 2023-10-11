@@ -77,5 +77,3 @@ text = "Go fight the plane"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.939693, -0.241845, -0.241845, 0, -0.707107, 0.707107, -0.34202, -0.664463, -0.664463, 0, 50, 0)
-
-[connection signal="enemies_changed" from="." to="UI" method="_on_main_enemies_changed"]
