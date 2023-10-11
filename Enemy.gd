@@ -5,9 +5,8 @@ const top_speed=10
 var speed=10
 var hits_taken=0
 var crashes=0
-signal hit
 var cooldown=0
-var HUD_points=[[[0,0],[0,0]]]
+var HUD_points=[]
 
 var chillin=false # for testing
 func _unhandled_input(event):
@@ -18,7 +17,12 @@ func _unhandled_input(event):
 
 func _physics_process(delta):
 	var player=get_node("/root/Main/Player")
-	HUD_points[0]=Jet.track(transform,player.position,player.velocity)
+	var allies=[]+get_node("/root/Main").enemies
+	HUD_points=[Jet.track(transform,player.position,player.velocity)]
+	allies.erase(self)
+	if get_node("/root/Main").current_camera<=allies.size():
+		for ally in allies:
+			HUD_points.append(Jet.track(transform,ally.position,ally.velocity))
 	
 	if chillin:
 		velocity=Vector3.ZERO
@@ -52,4 +56,3 @@ func _physics_process(delta):
 			hits_taken+=1
 		else:
 			crashes+=1
-		hit.emit()

@@ -5,18 +5,19 @@ const top_speed=15
 var speed=0
 var hits_taken=0
 var crashes=0
-signal hit
 var cooldown=0
 var HUD_points=[[[0,0],[0,0]]]
 
-var suggestions_on=true
+var suggestions_on=false
 func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_suggestions") && event.pressed:
 		suggestions_on=not suggestions_on
 
 func _physics_process(delta):
-	var enemy=get_node("/root/Main/Enemy")
-	HUD_points[0]=Jet.track(transform,enemy.position,enemy.velocity)
+	var enemies=get_node("/root/Main").enemies
+	HUD_points=[]
+	for enemy in enemies:
+		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity))
 	
 	if suggestions_on:
 		var suggestions=Jet.autopilot(HUD_points[0])
@@ -52,4 +53,3 @@ func _physics_process(delta):
 			hits_taken+=1
 		else:
 			crashes+=1
-		hit.emit()

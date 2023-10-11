@@ -1,11 +1,10 @@
-[gd_scene load_steps=15 format=3 uid="uid://bk76cujr3ye4k"]
+[gd_scene load_steps=14 format=3 uid="uid://bk76cujr3ye4k"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_6rvo3"]
 [ext_resource type="PackedScene" uid="uid://c5wlatravmab7" path="res://player.tscn" id="1_uil6o"]
 [ext_resource type="Environment" uid="uid://ln4cxp42sp5m" path="res://environment.tres" id="3_cymjq"]
 [ext_resource type="Script" path="res://PlaceholderObstacles.gd" id="3_o86si"]
 [ext_resource type="Script" path="res://UI.gd" id="4_41i2s"]
-[ext_resource type="PackedScene" uid="uid://beb8a4ck3g5hf" path="res://enemy.tscn" id="5_4qii8"]
 [ext_resource type="FontFile" uid="uid://chu7cr3o6gib4" path="res://Xolonium-Regular.ttf" id="6_88733"]
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_qjwdv"]
@@ -76,12 +75,7 @@ theme_override_fonts/font = ExtResource("6_88733")
 theme_override_font_sizes/font_size = 50
 text = "Go fight the plane"
 
-[node name="Enemy" parent="." instance=ExtResource("5_4qii8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 14)
-collision_mask = 7
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.939693, -0.241845, -0.241845, 0, -0.707107, 0.707107, -0.34202, -0.664463, -0.664463, 0, 50, 0)
 
-[connection signal="hit" from="Player" to="UI" method="_on_hit"]
-[connection signal="hit" from="Enemy" to="UI" method="_on_hit"]
+[connection signal="enemies_changed" from="." to="UI" method="_on_main_enemies_changed"]

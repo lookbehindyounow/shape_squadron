@@ -50,7 +50,7 @@ static func turn(basis,roll,pitch,delta):
 
 static func shoot(shooter):
 	var bullet=shooter.get_node("/root/Main").bullet_scene.instantiate()
-	bullet.global_transform=shooter.global_transform
+	bullet.transform=shooter.transform
 	bullet.position+=shooter.transform.basis.z
 	bullet.linear_velocity=shooter.transform.basis.z*50
 	shooter.get_node("/root/Main").add_child(bullet)
