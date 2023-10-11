@@ -7,7 +7,7 @@ var hits_taken=0
 var crashes=0
 signal hit
 var cooldown=0
-var target_o_clock=0
+var HUD_points=[[[0,0],[0,0]]]
 
 var chillin=false # for testing
 func _unhandled_input(event):
@@ -17,22 +17,18 @@ func _unhandled_input(event):
 # could maybe have state:enum determined randomly
 
 func _physics_process(delta):
-	var accelerating=false
-	var decelerating=false
-	var rolling=0
-	var pitching=0
-	var shooting=false
+	var player=get_node("/root/Main/Player")
+	HUD_points[0]=Jet.track(transform,player.position,player.velocity)
 	
 	if chillin:
-		target_o_clock=Jet.track(transform,get_node("/root/Main/Player").position)
 		velocity=Vector3.ZERO
 	else:
-		var suggestions=Jet.autopilot(transform,get_node("/root/Main/Player").position)
-		target_o_clock=suggestions[0]
-		rolling=0.75*suggestions[1]
-		pitching=0.5*suggestions[2]
-		shooting=suggestions[3]
-	
+		var suggestions=Jet.autopilot(HUD_points[0])
+		var rolling=0.75*suggestions[0]
+		var pitching=0.5*suggestions[1]
+		
+		var accelerating=false
+		var decelerating=false
 		if accelerating:
 			speed=min(speed+acceleration*delta,top_speed)
 		if decelerating:
@@ -43,7 +39,7 @@ func _physics_process(delta):
 		velocity=transform.basis.z*speed
 	move_and_slide()
 	
-	if shooting:
+	if HUD_points[0][1][1]<PI/12:
 		if cooldown>0.05:
 			Jet.shoot(self)
 			cooldown=0

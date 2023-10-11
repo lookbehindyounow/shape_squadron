@@ -1,13 +1,13 @@
 extends CharacterBody3D
 var Jet=preload("res://JetMethods.gd")
 const acceleration=2
-const top_speed=10
+const top_speed=15
 var speed=0
 var hits_taken=0
 var crashes=0
 signal hit
 var cooldown=0
-var target_o_clock=0
+var HUD_points=[[[0,0],[0,0]]]
 
 var suggestions_on=true
 func _unhandled_input(event):
@@ -15,12 +15,12 @@ func _unhandled_input(event):
 		suggestions_on=not suggestions_on
 
 func _physics_process(delta):
+	var enemy=get_node("/root/Main/Enemy")
+	HUD_points[0]=Jet.track(transform,enemy.position,enemy.velocity)
+	
 	if suggestions_on:
-		var suggestions=Jet.autopilot(transform,get_node("/root/Main/Enemy").position)
-		target_o_clock=suggestions[0]
-	else:
-		target_o_clock=Jet.track(transform,get_node("/root/Main/Enemy").position)
-		
+		var suggestions=Jet.autopilot(HUD_points[0])
+	
 	if Input.is_action_pressed("accelerate"):
 		speed=min(speed+acceleration*delta,top_speed)
 	if Input.is_action_pressed("decelerate"):
