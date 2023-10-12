@@ -1,5 +1,6 @@
 extends CharacterBody3D
 var Jet=preload("res://JetMethods.gd")
+var health=10
 const acceleration=2
 const top_speed=10
 var speed=10
@@ -7,6 +8,10 @@ var hits_taken=0
 var crashes=0
 var cooldown=0
 var HUD_points=[]
+signal die
+
+func _ready():
+	die.connect(get_node("/root/Main")._on_enemy_die.bind(self))
 
 var chillin=false # for testing
 func _unhandled_input(event):
@@ -18,16 +23,15 @@ func _unhandled_input(event):
 func _physics_process(delta):
 	var player=get_node("/root/Main/Player")
 	var allies=[]+get_node("/root/Main").enemies
-	HUD_points=[Jet.track(transform,player.position,player.velocity)+[true]]
 	allies.erase(self)
-	if get_node("/root/Main").current_camera<=allies.size():
-		for ally in allies:
-			HUD_points.append(Jet.track(transform,ally.position,ally.velocity)+[false])
+	HUD_points=[Jet.track(transform,player.position,player.velocity)]
+	for ally in allies:
+		HUD_points.append(Jet.track(transform,ally.position,ally.velocity,false))
 	
 	if chillin:
 		velocity=Vector3.ZERO
 	else:
-		var suggestions=Jet.autopilot(HUD_points[0])
+		var suggestions=Jet.autopilot(transform,HUD_points)
 		var rolling=0.75*suggestions[0]
 		var pitching=0.5*suggestions[1]
 		
@@ -50,9 +54,7 @@ func _physics_process(delta):
 		else:
 			cooldown+=delta
 	
-	var collisions=[]
 	for i in range(get_slide_collision_count()):
-		if Jet.collide(get_slide_collision(i).get_collider()):
-			hits_taken+=1
-		else:
-			crashes+=1
+		health-=Jet.collide(get_slide_collision(i).get_collider())
+		if health<=0:
+			die.emit()

@@ -21,28 +21,29 @@ static func track(transform,target_pos,target_velocity,enemy=true):
 	
 		ahead_HUD_angles=get_HUD_angles(transform,bullet_intercept_pos)
 	
-	return [HUD_angles,ahead_HUD_angles]
+	return [HUD_angles,ahead_HUD_angles,target_pos]
 
-static func autopilot(tracking_angles):
+static func autopilot(transform,HUD_points):
+	var x=0 # x marks target
 	var rolling=0
 	var pitching=0
 	
 	# could maybe reduce code here by using positive/negative dot products (against all transform basis axes) to figure out which way to go
-	if abs(tracking_angles[1][0])>PI/20 && abs(tracking_angles[1][0])<0.95*PI: # if target not at top or bottom centre of clock face
-		if abs(tracking_angles[1][0])<2*PI/3: # target in top 2/3 of clock face
-			if tracking_angles[1][0]>0:# top-right
+	if abs(HUD_points[x][1][0])>PI/20 && abs(HUD_points[x][1][0])<0.95*PI: # if target not at top or bottom centre of clock face
+		if abs(HUD_points[x][1][0])<2*PI/3: # target in top 2/3 of clock face
+			if HUD_points[x][1][0]>0:# top-right
 				rolling+=1
 			else: # top-left
 				rolling-=1
-		elif abs(tracking_angles[1][0])>=2*PI/3: # target in bottom 1/3 of clock face
-			if tracking_angles[1][0]>0: # bottom-right
+		elif abs(HUD_points[x][1][0])>=2*PI/3: # target in bottom 1/3 of clock face
+			if HUD_points[x][1][0]>0: # bottom-right
 				rolling-=1
 			else: # bottom-left
 				rolling+=1
 
-	if abs(tracking_angles[1][0])<0.4*PI: # target in top 2/5 of clock face
+	if abs(HUD_points[x][1][0])<0.4*PI: # target in top 2/5 of clock face
 		pitching-=1
-	elif abs(tracking_angles[1][0])>0.8*PI: # target in botom 1/5 of clock face
+	elif abs(HUD_points[x][1][0])>0.8*PI: # target in botom 1/5 of clock face
 		pitching+=1
 	return [rolling,pitching]
 
@@ -61,5 +62,5 @@ static func shoot(shooter):
 static func collide(collider):
 	if collider.is_in_group("bullets"):
 		collider.queue_free()
-		return true
-	return false
+		return 1
+	return INF

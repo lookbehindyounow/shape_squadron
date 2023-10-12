@@ -11,7 +11,7 @@ func _ready():
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
 		enemies[i].transform.origin=Vector3(0,6,5)
-		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(1.0*i)/(initial_enemy_count-1)*PI/2)
+		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(1.0+i)/(initial_enemy_count+1)*PI/2)
 		add_child(enemies[i])
 
 func _unhandled_input(event):
@@ -22,3 +22,13 @@ func _unhandled_input(event):
 			current_camera=-1
 		else:
 			enemies[current_camera].get_node("Camera3D").current=true
+
+func _on_enemy_die(dead):
+	for i in range(enemies.size()):
+		if enemies[i]==dead:
+			enemies.remove_at(i)
+			if current_camera>=i:
+				current_camera-=1
+				enemies[current_camera].get_node("Camera3D").current=true
+			break
+	dead.queue_free()

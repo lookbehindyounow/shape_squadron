@@ -1,5 +1,6 @@
 extends CharacterBody3D
 var Jet=preload("res://JetMethods.gd")
+var health=50
 const acceleration=2
 const top_speed=15
 var speed=0
@@ -8,19 +9,19 @@ var crashes=0
 var cooldown=0
 var HUD_points=[[[0,0],[0,0],false]]
 
-var suggestions_on=false
-func _unhandled_input(event):
-	if InputMap.event_is_action(event,"toggle_suggestions") && event.pressed:
-		suggestions_on=not suggestions_on
+#var suggestions_on=false
+#func _unhandled_input(event):
+#	if InputMap.event_is_action(event,"toggle_suggestions") && event.pressed:
+#		suggestions_on=not suggestions_on
 
 func _physics_process(delta):
 	var enemies=get_node("/root/Main").enemies
 	HUD_points=[]
 	for enemy in enemies:
-		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity)+[true])
+		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity))
 	
-	if suggestions_on:
-		var suggestions=Jet.autopilot(HUD_points[0])
+#	if suggestions_on:
+#		var suggestions=Jet.autopilot(transform,HUD_points)
 	
 	if Input.is_action_pressed("accelerate"):
 		speed=min(speed+acceleration*delta,top_speed)
@@ -47,9 +48,7 @@ func _physics_process(delta):
 		else:
 			cooldown+=delta
 	
-	var collisions=[]
 	for i in range(get_slide_collision_count()):
-		if Jet.collide(get_slide_collision(i).get_collider()):
-			hits_taken+=1
-		else:
-			crashes+=1
+		health-=Jet.collide(get_slide_collision(i).get_collider())
+		if health<=0:
+			pass
