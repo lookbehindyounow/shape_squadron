@@ -3,6 +3,8 @@ var Jet=preload("res://JetMethods.gd")
 var health=10
 const acceleration=2
 const top_speed=10
+const roll_speed=0.75
+const pitch_speed=0.5
 var speed=10
 var hits_taken=0
 var crashes=0
@@ -31,9 +33,9 @@ func _physics_process(delta):
 	if chillin:
 		velocity=Vector3.ZERO
 	else:
-		var instructions=Jet.autopilot(transform,HUD_points)
+		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points)
 		var rolling=0.75*instructions[0]
-		var pitching=0.5*instructions[1]
+		var pitching=pitch_speed*instructions[1]
 		var accelerating=instructions[2]
 		
 		speed=min(speed+(accelerating*acceleration*delta),top_speed)
