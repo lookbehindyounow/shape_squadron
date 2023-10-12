@@ -29,6 +29,11 @@ func _on_enemy_die(dead):
 			enemies.remove_at(i)
 			if current_camera>=i:
 				current_camera-=1
-				enemies[current_camera].get_node("Camera3D").current=true
+				if current_camera==-1:
+					$Player/Camera3D.current=true
+				else:
+					if current_camera<-1:
+						current_camera=enemies.size()-1
+					enemies[current_camera].get_node("Camera3D").current=true
 			break
 	dead.queue_free()

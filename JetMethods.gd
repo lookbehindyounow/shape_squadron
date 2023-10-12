@@ -23,29 +23,48 @@ static func track(transform,target_pos,target_velocity,enemy=true):
 	
 	return [HUD_angles,ahead_HUD_angles,target_pos]
 
-static func autopilot(transform,HUD_points):
-	var x=0 # x marks target
+static func instruct_turn(clock_face):
 	var rolling=0
 	var pitching=0
-	
 	# could maybe reduce code here by using positive/negative dot products (against all transform basis axes) to figure out which way to go
-	if abs(HUD_points[x][1][0])>PI/20 && abs(HUD_points[x][1][0])<0.95*PI: # if target not at top or bottom centre of clock face
-		if abs(HUD_points[x][1][0])<2*PI/3: # target in top 2/3 of clock face
-			if HUD_points[x][1][0]>0:# top-right
+	if abs(clock_face)>PI/20 && abs(clock_face)<0.95*PI: # if target not at top or bottom centre of clock face
+		if abs(clock_face)<2*PI/3: # target in top 2/3 of clock face
+			if clock_face>0:# top-right
 				rolling+=1
 			else: # top-left
 				rolling-=1
-		elif abs(HUD_points[x][1][0])>=2*PI/3: # target in bottom 1/3 of clock face
-			if HUD_points[x][1][0]>0: # bottom-right
+		elif abs(clock_face)>=2*PI/3: # target in bottom 1/3 of clock face
+			if clock_face>0: # bottom-right
 				rolling-=1
 			else: # bottom-left
 				rolling+=1
-
-	if abs(HUD_points[x][1][0])<0.4*PI: # target in top 2/5 of clock face
+	
+	if abs(clock_face)<0.4*PI: # target in top 2/5 of clock face
 		pitching-=1
-	elif abs(HUD_points[x][1][0])>0.8*PI: # target in botom 1/5 of clock face
+	elif abs(clock_face)>0.8*PI: # target in botom 1/5 of clock face
 		pitching+=1
+	
 	return [rolling,pitching]
+
+static func autopilot(transform,HUD_points):
+	var x=0 # x marks target
+	
+	var turn_instructions=instruct_turn(HUD_points[x][1][0])
+	var accelerating=0
+	
+	for point in HUD_points:
+		var to_point=point[2]-transform.origin
+		if to_point.length()<4:
+			var avoid_instructions=instruct_turn(point[0][0])
+			turn_instructions[0]-=avoid_instructions[0]
+			turn_instructions[1]-=avoid_instructions[1]
+			
+			if to_point.normalized().dot(transform.basis.z)>0:
+				accelerating=-1
+			else:
+				accelerating+=1
+	
+	return [turn_instructions[0],turn_instructions[1],accelerating]
 
 static func turn(basis,roll,pitch,delta):
 	basis=basis.rotated(basis.z,roll*delta)

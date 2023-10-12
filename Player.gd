@@ -23,10 +23,12 @@ func _physics_process(delta):
 #	if suggestions_on:
 #		var suggestions=Jet.autopilot(transform,HUD_points)
 	
+	var accelerating=0
 	if Input.is_action_pressed("accelerate"):
-		speed=min(speed+acceleration*delta,top_speed)
+		accelerating+=1
 	if Input.is_action_pressed("decelerate"):
-		speed=min(speed-acceleration*delta,top_speed)
+		accelerating-=1
+	speed=min(speed+(accelerating*acceleration*delta),top_speed)
 	var rolling=0
 	var pitching=0
 	if Input.is_action_pressed("roll_left"):

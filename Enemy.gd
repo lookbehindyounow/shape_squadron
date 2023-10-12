@@ -31,16 +31,12 @@ func _physics_process(delta):
 	if chillin:
 		velocity=Vector3.ZERO
 	else:
-		var suggestions=Jet.autopilot(transform,HUD_points)
-		var rolling=0.75*suggestions[0]
-		var pitching=0.5*suggestions[1]
+		var instructions=Jet.autopilot(transform,HUD_points)
+		var rolling=0.75*instructions[0]
+		var pitching=0.5*instructions[1]
+		var accelerating=instructions[2]
 		
-		var accelerating=false
-		var decelerating=false
-		if accelerating:
-			speed=min(speed+acceleration*delta,top_speed)
-		if decelerating:
-			speed=min(speed-acceleration*delta,top_speed)
+		speed=min(speed+(accelerating*acceleration*delta),top_speed)
 		# could also make pitch & roll depend on target o'clock or dot product navigation from autopilot if I get into that
 		# both options would look more like analogue controls for player
 		transform.basis=Jet.turn(transform.basis,rolling,pitching,delta)
