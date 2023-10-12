@@ -8,6 +8,7 @@ var hits_taken=0
 var crashes=0
 var cooldown=0
 var HUD_points=[[[0,0],[0,0],false]]
+signal die
 
 #var suggestions_on=false
 #func _unhandled_input(event):
@@ -51,6 +52,10 @@ func _physics_process(delta):
 			cooldown+=delta
 	
 	for i in range(get_slide_collision_count()):
-		health-=Jet.collide(get_slide_collision(i).get_collider())
-		if health<=0:
-			pass
+		if not get_slide_collision(i).get_collider().is_in_group("bullets"):
+			die.emit()
+
+func _on_bullet_hit():
+	health-=1
+	if health<=0:
+		die.emit()

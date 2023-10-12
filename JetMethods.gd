@@ -14,7 +14,7 @@ static func track(transform,target_pos,target_velocity,enemy=true):
 	if enemy:
 		# bullet speed is 50
 		var targToPlayer_dot_targV=(transform.origin-target_pos).normalized().dot(target_velocity.normalized())
-		var sin_target_travel_angle=target_velocity.length()*sqrt(1-(targToPlayer_dot_targV**2))/50
+		var sin_target_travel_angle=target_velocity.length()*sqrt(1-(targToPlayer_dot_targV**2))/100
 		var bullet_intercept_angle=PI-asin(sin_target_travel_angle)-acos(targToPlayer_dot_targV)
 		var target_travel=sin_target_travel_angle*(transform.origin-target_pos).length()/sin(bullet_intercept_angle)
 		var bullet_intercept_pos=target_pos+target_travel*target_velocity.normalized()
@@ -74,12 +74,6 @@ static func turn(basis,roll,pitch,delta):
 static func shoot(shooter):
 	var bullet=shooter.get_node("/root/Main").bullet_scene.instantiate()
 	bullet.transform=shooter.transform
-	bullet.position+=shooter.transform.basis.z
-	bullet.linear_velocity=shooter.transform.basis.z*50
+	bullet.position+=shooter.transform.basis.z	
+	bullet.linear_velocity=bullet.transform.basis.z*100
 	shooter.get_node("/root/Main").add_child(bullet)
-
-static func collide(collider):
-	if collider.is_in_group("bullets"):
-		collider.queue_free()
-		return 1
-	return INF

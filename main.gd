@@ -37,3 +37,6 @@ func _on_enemy_die(dead):
 					enemies[current_camera].get_node("Camera3D").current=true
 			break
 	dead.queue_free()
+
+func _on_player_die():
+	pass # Replace with function body.

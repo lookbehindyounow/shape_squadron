@@ -8,10 +8,10 @@ size = Vector3(0.8, 0.25, 1)
 [sub_resource type="PrismMesh" id="PrismMesh_mr05l"]
 size = Vector3(0.8, 1, 0.25)
 
-[node name="Enemy" type="CharacterBody3D"]
+[node name="Enemy" type="CharacterBody3D" groups=["jets"]]
 rotation_order = 4
 collision_layer = 2
-collision_mask = 15
+collision_mask = 11
 script = ExtResource("1_jpjpq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
