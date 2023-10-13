@@ -9,6 +9,7 @@ var gaming=true
 func _ready():
 	var initial_enemy_count=5
 	$Player/Camera3D.current=true
+	$UI/StatusLabel.text="Health: %s" %$Player.health
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
 		enemies[i].transform.origin=Vector3(0,6,5)
@@ -21,8 +22,13 @@ func _unhandled_input(event):
 		if current_camera==enemies.size():
 			$Player/Camera3D.current=true
 			current_camera=-1
+			if gaming:
+				$UI/StatusLabel.text="Health: %s" %$Player.health
+			else:
+				$UI/StatusLabel.text=""
 		else:
 			enemies[current_camera].get_node("Camera3D").current=true
+			$UI/StatusLabel.text="Health: %s" %enemies[current_camera].health
 
 func _on_enemy_die(dead):
 	for i in range(enemies.size()):
@@ -32,9 +38,22 @@ func _on_enemy_die(dead):
 				current_camera-=1
 				if current_camera==-1:
 					$Player/Camera3D.current=true
+					if gaming:
+						$UI/StatusLabel.text="Health: %s" %$Player.health
+					else:
+						$UI/StatusLabel.text=""
 				else:
 					if current_camera<-1:
 						current_camera=enemies.size()-1
 					enemies[current_camera].get_node("Camera3D").current=true
+					$UI/StatusLabel.text="Health: %s" %enemies[current_camera].health
 			break
 	dead.queue_free()
+	
+	if enemies.size()==0:
+		$UI/Endgame.text="Those triangles had families"
+		$UI/Endgame.show()
+
+func _on_restart_pressed():
+	print(1)
+	get_tree().reload_current_scene()

@@ -79,6 +79,8 @@ func _on_bullet_hit():
 
 func die():
 	get_node("/root/Main").gaming=false
+	get_node("/root/Main/UI/Endgame").text="We got em boys - away home to bed :)"
+	get_node("/root/Main/UI/Endgame").show()
 	$CollisionShape3D.set_deferred("disabled",true)
 	$PlaceholderBody.hide()
 	transform.basis=Basis(Vector3.RIGHT,Vector3(0,sqrt(3)/2,0.5),Vector3(0,-0.5,sqrt(3)/2))

@@ -66,12 +66,45 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4_41i2s")
 
-[node name="ScoreLabel" type="Label" parent="UI"]
+[node name="StatusLabel" type="Label" parent="UI"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 theme_override_fonts/font = ExtResource("6_88733")
 theme_override_font_sizes/font_size = 50
 
+[node name="Endgame" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -148.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("6_88733")
+theme_override_font_sizes/font_size = 60
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Restart" type="Button" parent="UI/Endgame"]
+top_level = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -87.0
+offset_top = 100.0
+offset_right = 87.0
+offset_bottom = 169.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("6_88733")
+theme_override_font_sizes/font_size = 50
+text = "Again!"
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.939693, -0.241845, -0.241845, 0, -0.707107, 0.707107, -0.34202, -0.664463, -0.664463, 0, 50, 0)
+
+[connection signal="pressed" from="UI/Endgame/Restart" to="." method="_on_restart_pressed"]

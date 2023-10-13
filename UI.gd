@@ -8,6 +8,7 @@ func _draw():
 
 func _ready():
 	screen_dimensions=get_node("/root").size
+	$Endgame.hide()
 
 func _process(delta):
 	var HUD_points=[]
