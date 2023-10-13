@@ -4,6 +4,7 @@ var enemy_scene=preload("res://enemy.tscn")
 var bullet_scene=preload("res://bullet.tscn")
 var enemies=[]
 var current_camera=-1
+var gaming=true
 
 func _ready():
 	var initial_enemy_count=5
@@ -37,6 +38,3 @@ func _on_enemy_die(dead):
 					enemies[current_camera].get_node("Camera3D").current=true
 			break
 	dead.queue_free()
-
-func _on_player_die():
-	pass # Replace with function body.

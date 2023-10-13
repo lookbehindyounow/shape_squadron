@@ -10,8 +10,8 @@ var hits_taken=0
 var crashes=0
 var cooldown=0
 var HUD_points=[]
-signal die
 
+signal die
 func _ready():
 	die.connect(get_node("/root/Main")._on_enemy_die.bind(self))
 
@@ -24,33 +24,38 @@ func _unhandled_input(event):
 
 func _physics_process(delta):
 	var player=get_node("/root/Main/Player")
+	var gaming=get_node("/root/Main").gaming
+	if gaming:
+		HUD_points=[Jet.track(transform,player.position,player.velocity)]
+	else:
+		HUD_points=[Jet.track(transform,player.ave_enemy_pos+Vector3(100,0,0),Vector3.ZERO)]
+	
 	var allies=[]+get_node("/root/Main").enemies
 	allies.erase(self)
-	HUD_points=[Jet.track(transform,player.position,player.velocity)]
 	for ally in allies:
 		HUD_points.append(Jet.track(transform,ally.position,ally.velocity,false))
 	
 	if chillin:
 		velocity=Vector3.ZERO
 	else:
-		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points)
-		var rolling=0.75*instructions[0]
-		var pitching=pitch_speed*instructions[1]
-		var accelerating=instructions[2]
+		if gaming && HUD_points[0][1][1]<PI/12:
+			if cooldown>0.05:
+				Jet.shoot(self)
+				cooldown=0
+			else:
+				cooldown+=delta
 		
-		speed=min(speed+(accelerating*acceleration*delta),top_speed)
+		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points)
 		# could also make pitch & roll depend on target o'clock or dot product navigation from autopilot if I get into that
 		# both options would look more like analogue controls for player
-		transform.basis=Jet.turn(transform.basis,rolling,pitching,delta)
+		
+		speed=min(speed+(instructions[2]*acceleration*delta),top_speed)
+		transform.basis=Jet.turn(transform.basis,instructions[0]*roll_speed,instructions[1]*pitch_speed,delta)
 		velocity=transform.basis.z*speed
 	move_and_slide()
 	
-	if HUD_points[0][1][1]<PI/12:
-		if cooldown>0.05:
-			Jet.shoot(self)
-			cooldown=0
-		else:
-			cooldown+=delta
+	if not gaming:
+		HUD_points.remove_at(0)
 	
 	for i in range(get_slide_collision_count()):
 		if not get_slide_collision(i).get_collider().is_in_group("bullets"):

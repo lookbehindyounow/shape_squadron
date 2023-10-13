@@ -46,10 +46,10 @@ static func instruct_turn(clock_face):
 	
 	return [rolling,pitching]
 
-static func autopilot(transform,speed,pitch_speed,HUD_points,target=0): # target is index of HUD point
+static func autopilot(transform,speed,pitch_speed,HUD_points): # target is index of HUD point
 	var accelerating=0
 	
-	var turn_instructions=instruct_turn(HUD_points[target][1][0]) # aim for player's ahead marker
+	var turn_instructions=instruct_turn(HUD_points[0][1][0]) # aim for player's ahead marker
 	
 	if transform.origin.y<5+speed/pitch_speed: # if near ground
 		if transform.origin.y<5+(speed/pitch_speed)*(1-sin(Vector3.DOWN.angle_to(transform.basis.z))): # if too near ground for current orientation
@@ -76,7 +76,7 @@ static func autopilot(transform,speed,pitch_speed,HUD_points,target=0): # target
 			if to_point.dot(transform.basis.z)>0:
 				accelerating=-1
 			else:
-				accelerating+=1
+				accelerating=1
 	
 	return [turn_instructions[0],turn_instructions[1],accelerating]
 

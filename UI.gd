@@ -33,7 +33,7 @@ func _process(delta):
 			icons[i][0].set_colour("#00f")
 		add_child(icons[i][0])
 		
-		if HUD_points[i][1]!=null:
+		if HUD_points[i][1]:
 			if HUD_points[i][1][1]<0.65:
 				icons[i].append(icon_scene.instantiate())
 				icons[i][1].position=Vector2(screen_dimensions/2)+(((HUD_points[i][1][1]/0.65)*screen_dimensions.y/2.2)*Vector2.UP.rotated(HUD_points[i][1][0]))
