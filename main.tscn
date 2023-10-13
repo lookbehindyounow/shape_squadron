@@ -5,17 +5,18 @@
 [ext_resource type="Environment" uid="uid://ln4cxp42sp5m" path="res://environment.tres" id="3_cymjq"]
 [ext_resource type="Script" path="res://PlaceholderObstacles.gd" id="3_o86si"]
 [ext_resource type="Script" path="res://UI.gd" id="4_41i2s"]
+[ext_resource type="Texture2D" uid="uid://dnpihanfj3aom" path="res://carpet.jpg" id="4_lpqbg"]
 [ext_resource type="FontFile" uid="uid://chu7cr3o6gib4" path="res://Xolonium-Regular.ttf" id="6_88733"]
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_qjwdv"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pheba"]
-albedo_color = Color(0.141176, 0.627451, 0.792157, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y2waq"]
+albedo_texture = ExtResource("4_lpqbg")
+uv1_scale = Vector3(50, 50, 50)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_78ggt"]
+material = SubResource("StandardMaterial3D_y2waq")
 size = Vector2(1000, 1000)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rn776"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8xpy8"]
 albedo_color = Color(0, 1, 0, 1)
@@ -44,9 +45,7 @@ collision_mask = 0
 shape = SubResource("WorldBoundaryShape3D_qjwdv")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ocean"]
-material_override = SubResource("StandardMaterial3D_pheba")
 mesh = SubResource("PlaneMesh_78ggt")
-surface_material_override/0 = SubResource("StandardMaterial3D_rn776")
 
 [node name="PlaceholderObstacles" type="StaticBody3D" parent="."]
 collision_layer = 8

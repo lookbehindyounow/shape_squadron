@@ -55,5 +55,4 @@ func _on_enemy_die(dead):
 		$UI/Endgame.show()
 
 func _on_restart_pressed():
-	print(1)
 	get_tree().reload_current_scene()

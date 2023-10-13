@@ -2,14 +2,16 @@ extends CharacterBody3D
 var Jet=preload("res://JetMethods.gd")
 var health=10
 const acceleration=2
-const top_speed=10
+const top_speed=15
 const roll_speed=0.75
-const pitch_speed=0.5
-var speed=10
+const pitch_speed=0.75
+var speed=15
 var hits_taken=0
 var crashes=0
 var cooldown=0
 var HUD_points=[]
+var roll_momentum=0
+var pitch_momentum=0
 
 signal die
 func _ready():
@@ -49,8 +51,11 @@ func _physics_process(delta):
 		# could also make pitch & roll depend on target o'clock or dot product navigation from autopilot if I get into that
 		# both options would look more like analogue controls for player
 		
+		roll_momentum=(10.0*roll_momentum+instructions[0])/11
+		pitch_momentum=(10.0*pitch_momentum+instructions[1])/11
+		
 		speed=min(speed+(instructions[2]*acceleration*delta),top_speed)
-		transform.basis=Jet.turn(transform.basis,instructions[0]*roll_speed,instructions[1]*pitch_speed,delta)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,delta)
 		velocity=transform.basis.z*speed
 	move_and_slide()
 	

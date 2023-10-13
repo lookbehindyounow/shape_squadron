@@ -10,6 +10,9 @@ var hits_taken=0
 var crashes=0
 var cooldown=0
 var HUD_points=[]
+var roll_momentum=0
+var pitch_momentum=0
+
 var ave_enemy_pos=Vector3.ZERO
 
 #var suggestions_on=false
@@ -53,9 +56,12 @@ func _physics_process(delta):
 				cooldown=0
 			else:
 				cooldown+=delta
-	
+		
+		roll_momentum=(10.0*roll_momentum+rolling)/11
+		pitch_momentum=(10.0*pitch_momentum+pitching)/11
+		
 		speed=min(speed+(accelerating*acceleration*delta),top_speed)
-		transform.basis=Jet.turn(transform.basis,rolling*roll_speed,pitching*pitch_speed,delta)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,delta)
 		velocity=transform.basis.z*speed
 		move_and_slide()
 		
