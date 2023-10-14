@@ -88,7 +88,7 @@ static func autopilot(transform,speed,pitch_speed,HUD_points): # change HUD poin
 	if avoid_points: # if any points to avoid
 		avoid_instructions[0]+=avoid_points_instructions[mindex][0]
 		avoid_instructions[1]+=avoid_points_instructions[mindex][1]
-		avoid_instructions[2]-=avoid_points_instructions[mindex][2].dot(transform.basis.z) # take away from acceleration
+		avoid_instructions[2]-=avoid_points_instructions[mindex][2].normalized().dot(transform.basis.z) # take away from acceleration
 	
 	if avoid_instructions!=[0,0,0]: # if any avoid instructions
 		instructions=avoid_instructions # override instrucions
