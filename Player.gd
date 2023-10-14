@@ -13,6 +13,9 @@ var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
 
+var rolling=0 # for showing in UI
+var pitching=0
+
 var ave_enemy_pos=Vector3.ZERO
 
 #var suggestions_on=false
@@ -27,15 +30,15 @@ func _physics_process(delta):
 	for enemy in enemies:
 		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity,gaming))
 	if not gaming:
-		HUD_points=HUD_points.map(func(HUD_point): return [HUD_point[0],false,HUD_point[2]])
+		HUD_points=HUD_points.map(func(HUD_point): return [HUD_point[0],false,HUD_point[0][2]])
 	
 #	if suggestions_on:
 #		var suggestions=Jet.autopilot(transform,HUD_points)
 	
 	if gaming:
 		var accelerating=0
-		var rolling=0
-		var pitching=0
+		rolling=0
+		pitching=0
 		
 		if Input.is_action_pressed("accelerate"):
 			accelerating+=1

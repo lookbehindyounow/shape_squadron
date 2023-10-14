@@ -3,32 +3,22 @@ extends Node
 var enemy_scene=preload("res://enemy.tscn")
 var bullet_scene=preload("res://bullet.tscn")
 var enemies=[]
+var initial_enemy_count=5
 var current_camera=-1
 var gaming=true
 
 func _ready():
-	var initial_enemy_count=5
-	$Player/Camera3D.current=true
-	$UI/StatusLabel.text="Health: %s" %$Player.health
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
 		enemies[i].transform.origin=Vector3(0,6,5)
 		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(1.0+i)/(initial_enemy_count+1)*PI/2)
 		add_child(enemies[i])
+	current_camera=initial_enemy_count-1
+	update_camera()
 
 func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_camera") && event.pressed:
-		current_camera+=1
-		if current_camera==enemies.size():
-			$Player/Camera3D.current=true
-			current_camera=-1
-			if gaming:
-				$UI/StatusLabel.text="Health: %s" %$Player.health
-			else:
-				$UI/StatusLabel.text=""
-		else:
-			enemies[current_camera].get_node("Camera3D").current=true
-			$UI/StatusLabel.text="Health: %s" %enemies[current_camera].health
+		update_camera()
 
 func _on_enemy_die(dead):
 	for i in range(enemies.size()):
@@ -36,23 +26,27 @@ func _on_enemy_die(dead):
 			enemies.remove_at(i)
 			if current_camera>=i:
 				current_camera-=1
-				if current_camera==-1:
-					$Player/Camera3D.current=true
-					if gaming:
-						$UI/StatusLabel.text="Health: %s" %$Player.health
-					else:
-						$UI/StatusLabel.text=""
-				else:
-					if current_camera<-1:
-						current_camera=enemies.size()-1
-					enemies[current_camera].get_node("Camera3D").current=true
-					$UI/StatusLabel.text="Health: %s" %enemies[current_camera].health
+				if current_camera==i-1:
+					update_camera()
 			break
 	dead.queue_free()
 	
 	if enemies.size()==0:
 		$UI/Endgame.text="Those triangles had families"
 		$UI/Endgame.show()
+
+func update_camera():
+	current_camera+=1
+	var guy
+	if current_camera>=enemies.size():
+		guy=$Player
+		current_camera=-1
+	else:
+		guy=enemies[current_camera]
+	guy.get_node("Camera3D").current=true
+	$UI.guy=guy
+	if not gaming && current_camera==-1:
+		$UI/StatusLabel.text=""
 
 func _on_restart_pressed():
 	get_tree().reload_current_scene()

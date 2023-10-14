@@ -2,22 +2,20 @@ extends Control
 var screen_dimensions
 var icon_scene=preload("res://icon.tscn")
 var icons=[]
+var guy
 
 func _draw():
 	draw_arc(screen_dimensions/2,screen_dimensions.y/2.2,0,TAU,100,Color("#0f0"))
+	# crosshairs
 
 func _ready():
+	guy=get_node("/root/Main/Player")
 	screen_dimensions=get_node("/root").size
 	$Endgame.hide()
 
 func _process(delta):
-	var HUD_points=[]
-	var enemies=get_node("/root/Main").enemies
-	var camera=get_node("/root/Main").current_camera
-	if camera==-1:
-		HUD_points=get_node("/root/Main/Player").HUD_points
-	else:
-		HUD_points=enemies[camera].HUD_points
+	var HUD_points=guy.HUD_points
+	$StatusLabel.text="Health: %s\nRolling: %s\nPitching: %s" %[guy.health,guy.rolling,guy.pitching]
 	
 	for entity in icons:
 		for icon in entity:

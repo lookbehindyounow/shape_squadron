@@ -103,6 +103,12 @@ theme_override_fonts/font = ExtResource("6_88733")
 theme_override_font_sizes/font_size = 50
 text = "Again!"
 
+[node name="Label" type="Label" parent="UI"]
+layout_mode = 0
+offset_top = 200.0
+offset_right = 40.0
+offset_bottom = 223.0
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.939693, -0.241845, -0.241845, 0, -0.707107, 0.707107, -0.34202, -0.664463, -0.664463, 0, 50, 0)
 
