@@ -5,6 +5,7 @@ const acceleration=2
 const top_speed=15
 const roll_speed=0.75
 const pitch_speed=0.75
+const yaw_speed=1
 var speed=15
 var hits_taken=0
 var crashes=0
@@ -12,9 +13,6 @@ var cooldown=0
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
-
-var rolling=0 # for showing in UI
-var pitching=0
 
 signal die
 func _ready():
@@ -25,7 +23,8 @@ func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_chillin") && event.pressed:
 		chillin=not chillin
 
-# could maybe have state:enum determined randomly
+var state="towards"
+var prev_targ_dist=0
 
 func _physics_process(delta):
 	var player=get_node("/root/Main/Player")
@@ -43,23 +42,28 @@ func _physics_process(delta):
 	if chillin:
 		velocity=Vector3.ZERO
 	else:
-		if gaming && HUD_points[0][1][1]<PI/12:
+		var target_distance=(HUD_points[0][0][2]-transform.origin).length()
+		if gaming && target_distance<45 && HUD_points[0][1][1]<PI/12:
 			if cooldown>0.05:
 				Jet.shoot(self)
 				cooldown=0
 			else:
 				cooldown+=delta
 		
-		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points) # change to just point locations (& ahead locations for enemies)
+		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state) # change to just point locations (& ahead locations for enemies)
 		
-		rolling=instructions[0] # for showing in UI
-		pitching=instructions[1]
+		state=instructions[4]
+		if target_distance<10 && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.95*speed*delta:
+			state="away"
+		prev_targ_dist=target_distance
+		if target_distance>30:
+			state="towards"
 		
 		roll_momentum=(10.0*roll_momentum+instructions[0])/11
 		pitch_momentum=(10.0*pitch_momentum+instructions[1])/11
 		
-		speed=min(speed+(instructions[2]*acceleration*delta),top_speed)
-		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,delta)
+		speed=min(speed+(instructions[3]*acceleration*delta),top_speed)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,instructions[2]*yaw_speed,delta)
 		velocity=transform.basis.z*speed
 	move_and_slide()
 	

@@ -15,7 +15,10 @@ func _ready():
 
 func _process(delta):
 	var HUD_points=guy.HUD_points
-	$StatusLabel.text="Health: %s\nRolling: %s\nPitching: %s" %[guy.health,guy.rolling,guy.pitching]
+	if guy.health==0:
+		$StatusLabel.text=""
+	else:
+		$StatusLabel.text="Health: %s" %guy.health
 	
 	for entity in icons:
 		for icon in entity:

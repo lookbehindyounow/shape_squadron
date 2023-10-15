@@ -5,6 +5,7 @@ const acceleration=2
 const top_speed=15
 const roll_speed=1
 const pitch_speed=1
+const yaw_speed=0.2
 var speed=0
 var hits_taken=0
 var crashes=0
@@ -12,9 +13,7 @@ var cooldown=0
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
-
-var rolling=0 # for showing in UI
-var pitching=0
+var yaw_momentum=0
 
 var ave_enemy_pos=Vector3.ZERO
 
@@ -36,22 +35,33 @@ func _physics_process(delta):
 #		var suggestions=Jet.autopilot(transform,HUD_points)
 	
 	if gaming:
+		var rolling=0
+		var pitching=0
+		var yawing=0
 		var accelerating=0
-		rolling=0
-		pitching=0
 		
 		if Input.is_action_pressed("accelerate"):
 			accelerating+=1
 		if Input.is_action_pressed("decelerate"):
 			accelerating-=1
-		if Input.is_action_pressed("roll_left"):
-			rolling-=1
-		if Input.is_action_pressed("roll_right"):
-			rolling+=1
+		
 		if Input.is_action_pressed("pitch_up"):
 			pitching-=1
 		if Input.is_action_pressed("pitch_down"):
 			pitching+=1
+			
+		if Input.is_action_pressed("slow_turn"):
+			pitching*=0.2
+			if Input.is_action_pressed("roll_left"):
+				yawing+=1
+			if Input.is_action_pressed("roll_right"):
+				yawing-=1
+		else:
+			if Input.is_action_pressed("roll_left"):
+				rolling-=1
+			if Input.is_action_pressed("roll_right"):
+				rolling+=1
+		
 		
 		if Input.is_action_pressed("shoot"):
 			if cooldown>0.05:
@@ -62,9 +72,10 @@ func _physics_process(delta):
 		
 		roll_momentum=(10.0*roll_momentum+rolling)/11
 		pitch_momentum=(10.0*pitch_momentum+pitching)/11
+		yaw_momentum=(10.0*yaw_momentum+yawing)/11
 		
 		speed=min(speed+(accelerating*acceleration*delta),top_speed)
-		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,delta)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
 		velocity=transform.basis.z*speed
 		move_and_slide()
 		
@@ -87,6 +98,7 @@ func _on_bullet_hit():
 		die()
 
 func die():
+	health=0
 	get_node("/root/Main").gaming=false
 	get_node("/root/Main/UI/Endgame").text="We got em boys - away home to bed :)"
 	get_node("/root/Main/UI/Endgame").show()
