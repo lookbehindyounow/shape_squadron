@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://c5tcoh0i2x20m"]
+
+[ext_resource type="Script" path="res://Explosion.gd" id="1_ui30q"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_4hq3o"]
+
+[node name="Explosion" type="MeshInstance3D"]
+mesh = SubResource("SphereMesh_4hq3o")
+script = ExtResource("1_ui30q")

@@ -10,6 +10,9 @@ var speed=0
 var hits_taken=0
 var crashes=0
 var cooldown=0
+var missiles=10
+var missile_cooldowns=[0,0]
+var missiles_following=[]
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
@@ -62,13 +65,30 @@ func _physics_process(delta):
 			if Input.is_action_pressed("roll_right"):
 				rolling+=1
 		
-		
 		if Input.is_action_pressed("shoot"):
-			if cooldown>0.05:
+			if cooldown<0:
 				Jet.shoot(self)
-				cooldown=0
+				cooldown=0.05
 			else:
-				cooldown+=delta
+				cooldown-=delta
+		
+		if Input.is_action_just_pressed("missile"):
+			for i in range(missile_cooldowns.size()):
+				if missiles && missile_cooldowns[i]<0:
+					var locked=null
+					var mindex=null
+					for j in range(HUD_points.size()):
+						if HUD_points[j][0][1]<0.3 && (HUD_points[j][0][2]-position).length()<50:
+							if mindex==null || HUD_points[j][1][1]<HUD_points[mindex][1][1]:
+								mindex=j
+					if mindex:
+						locked=enemies[mindex]
+					Jet.shoot(self,true,locked,true if Input.is_action_pressed("slow_turn") else false)
+					missiles-=1
+					missile_cooldowns[i]=1.5
+					break
+		for i in range(missile_cooldowns.size()):
+			missile_cooldowns[i]-=delta
 		
 		roll_momentum=(10.0*roll_momentum+rolling)/11
 		pitch_momentum=(10.0*pitch_momentum+pitching)/11
@@ -80,7 +100,7 @@ func _physics_process(delta):
 		move_and_slide()
 		
 		for i in range(get_slide_collision_count()):
-			if not get_slide_collision(i).get_collider().is_in_group("bullets"):
+			if not get_slide_collision(i).get_collider().is_in_group("weapons"):
 				die()
 	else:
 		var sum=Vector3.ZERO
@@ -97,7 +117,15 @@ func _on_bullet_hit():
 	if health<=0:
 		die()
 
+func _on_missile_hit():
+	health-=5
+	if health<=0:
+		die()
+
 func die():
+	for missile in missiles_following:
+		missile.target=null
+	missiles_following=[]
 	health=0
 	get_node("/root/Main").gaming=false
 	get_node("/root/Main/UI/Endgame").text="We got em boys - away home to bed :)"

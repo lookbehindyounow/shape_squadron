@@ -13,7 +13,7 @@ static func track(transform,target_pos,target_velocity,enemy=true):
 	var ahead_HUD_angles=null
 	
 	if enemy:
-		# bullet speed is 50
+		# bullet speed is 100
 		var targToPlayer_dot_targV=(transform.origin-target_pos).normalized().dot(target_velocity.normalized())
 		var sin_target_travel_angle=target_velocity.length()*sqrt(1-(targToPlayer_dot_targV**2))/100
 		var bullet_intercept_angle=PI-asin(sin_target_travel_angle)-acos(targToPlayer_dot_targV)
@@ -49,7 +49,6 @@ static func instruct_aim(transform,target):
 			else:
 				rolling+=PI
 		
-		pitching=(PI/2-abs(rolling))*target[1]/3
 		pitching=sqrt(1-(target[2]-transform.origin).normalized().dot(transform.basis.z))
 		if abs(target[0])<PI/2:
 			pitching*=-1
@@ -132,9 +131,16 @@ static func turn(basis,roll,pitch,yaw,delta):
 	basis=basis.rotated(basis.y,yaw*delta)
 	return basis
 
-static func shoot(shooter):
-	var bullet=shooter.get_node("/root/Main").bullet_scene.instantiate()
-	bullet.transform=shooter.transform
-	bullet.position+=shooter.transform.basis.z	
-	bullet.linear_velocity=bullet.transform.basis.z*100
-	shooter.get_node("/root/Main").add_child(bullet)
+static func shoot(shooter,missile=false,locked=null,camera=false):
+	var weapon
+	if missile:
+		weapon=shooter.get_node("/root/Main").missile_scene.instantiate()
+		weapon.target=locked
+	else:
+		weapon=shooter.get_node("/root/Main").bullet_scene.instantiate()
+	weapon.transform=shooter.transform
+	weapon.position+=shooter.transform.basis.z
+	weapon.linear_velocity=weapon.transform.basis.z*100
+	shooter.get_node("/root/Main").add_child(weapon)
+	if camera:
+		weapon.get_node("Camera3D").current=true

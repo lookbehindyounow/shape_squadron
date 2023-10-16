@@ -2,8 +2,10 @@ extends Node
 
 var enemy_scene=preload("res://enemy.tscn")
 var bullet_scene=preload("res://bullet.tscn")
+var missile_scene=preload("res://missile.tscn")
+var explosion_scene=preload("res://explosion.tscn")
 var enemies=[]
-var initial_enemy_count=5
+var initial_enemy_count=0
 var current_camera=-1
 var gaming=true
 
@@ -50,3 +52,8 @@ func update_camera():
 
 func _on_restart_pressed():
 	get_tree().reload_current_scene()
+
+func explosion(location):
+	var boom=explosion_scene.instantiate()
+	boom.position=location
+	add_child(boom)
