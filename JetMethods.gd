@@ -29,6 +29,9 @@ static func instruct_aim(transform,target):
 	var yawing=0
 	var accelerating=0
 	
+	if (target[2]-transform.origin).length()>30:
+		accelerating=1
+	
 	if target[1]<0.3: # target centrally infront
 		rolling=1-Vector3.UP.dot(transform.basis.y) # level self
 		if Vector3.UP.dot(transform.basis.x)>0: # if leftside up
@@ -37,9 +40,7 @@ static func instruct_aim(transform,target):
 		pitching=-3*target[1]*cos(target[0])
 		yawing=-3*target[1]*sin(target[0])
 		
-		if (target[2]-transform.origin).length()>100:
-			accelerating=1
-		elif (target[2]-transform.origin).length()<20:
+		if (target[2]-transform.origin).length()<20:
 			accelerating=-1
 	else:
 		rolling=target[0]
@@ -77,12 +78,14 @@ static func cap_absolute_at_1(param):
 			param=-1
 	return param
 
-static func autopilot(transform,speed,pitch_speed,HUD_points,state):
+static func autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following):
 	var multiplier=3
 	var instructions=[0,0,0,0]
 	var avoid_instructions=[0,0,0,0]
 	
-	if state=="towards":
+	if missiles_following:
+		instructions[1]=cap_absolute_at_1(1000-Time.get_ticks_msec()%2000)
+	elif state=="towards":
 		instructions=instruct_aim(transform,HUD_points[0][1]) # aim for player's ([0]) ahead/bullet_intercept ([1])
 	elif state=="away":
 		instructions=instruct_avoid(transform,HUD_points[0][0])
@@ -106,7 +109,7 @@ static func autopilot(transform,speed,pitch_speed,HUD_points,state):
 	for i in range(HUD_points.size()):
 		var to_point=(HUD_points[i][0][2]-transform.origin)
 		if to_point.length()<4: # if any are too close
-			if (not to_avoid_point) || (to_point.length()<to_avoid_point.length()):
+			if to_avoid_point==null || (to_point.length()<to_avoid_point.length()):
 				to_avoid_point=to_point
 				mindex=i
 	
@@ -142,3 +145,5 @@ static func shoot(shooter,missile=false,locked=null,camera=false):
 	shooter.get_node("/root/Main").add_child(weapon)
 	if camera:
 		weapon.get_node("Camera3D").current=true
+		weapon.get_node("/root/Main/UI").missile=weapon
+		weapon.watching=true

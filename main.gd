@@ -9,13 +9,10 @@ var initial_enemy_count=5
 var current_camera=-1
 var gaming=true
 
-var bull
-var miss
-
 func _ready():
 	# first on screen instance of these objects (even though they're hidden by obstacles) lags the thing like hell so getting it out the way immediately stops it from affecting gameplay
-	bull=bullet_scene.instantiate()
-	miss=missile_scene.instantiate()
+	var bull=bullet_scene.instantiate()
+	var miss=missile_scene.instantiate()
 	bull.position=Vector3(60,1,60)
 	bull.linear_velocity=Vector3.DOWN*100
 	miss.position=Vector3(60,1,60)
@@ -45,7 +42,7 @@ func _on_enemy_die(dead):
 				if current_camera==i-1:
 					update_camera()
 			break
-	explosion(dead.position,true)
+	explosion(dead.position,0.35)
 	dead.queue_free()
 	
 	if enemies.size()==0:
@@ -62,15 +59,15 @@ func update_camera():
 		guy=enemies[current_camera]
 	guy.get_node("Camera3D").current=true
 	$UI.guy=guy
-	if not gaming && current_camera==-1:
-		$UI/StatusLabel.text=""
+	if $UI.missile:
+		$UI.missile.watching=false
+		$UI.missile=null
 
 func _on_restart_pressed():
 	get_tree().reload_current_scene()
 
-func explosion(location,big=false):
+func explosion(location,cycle_length=0.2):
 	var boom=explosion_scene.instantiate()
-	if big:
-		boom.cycle_length=0.35
+	boom.cycle_length=cycle_length
 	boom.position=location
 	add_child(boom)

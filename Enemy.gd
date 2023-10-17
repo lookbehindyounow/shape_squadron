@@ -45,7 +45,7 @@ func _physics_process(delta):
 	if chillin:
 		velocity=Vector3.ZERO
 	else:
-		var target_distance=(HUD_points[0][0][2]-transform.origin).length()
+		var target_distance=(HUD_points[0][0][2]-position).length()
 		if gaming && target_distance<45 && HUD_points[0][1][1]<PI/12:
 			if cooldown<0:
 				Jet.shoot(self)
@@ -53,20 +53,20 @@ func _physics_process(delta):
 			else:
 				cooldown-=delta
 		
-		if HUD_points[0][0][1]<0.3 && (HUD_points[0][0][2]-position).length()<50:
+		if HUD_points[0][0][1]<0.3 && target_distance<50:
 			if missiles && missile_cooldown<0:
 				Jet.shoot(self,true,player)
 				missiles-=1
 				missile_cooldown=3
 		missile_cooldown-=delta
 		
-		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state) # change to just point locations (& ahead locations for enemies)
+		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following) # change to just point locations (& ahead locations for enemies)
 		
 		state=instructions[4]
-		if target_distance<10 && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.95*speed*delta:
+		if target_distance<20 && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.9*speed*delta:
 			state="away"
 		prev_targ_dist=target_distance
-		if target_distance>30:
+		if target_distance>50:
 			state="towards"
 		
 		roll_momentum=(10.0*roll_momentum+instructions[0])/11

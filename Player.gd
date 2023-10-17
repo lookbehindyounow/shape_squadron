@@ -78,10 +78,10 @@ func _physics_process(delta):
 					var locked=null
 					var mindex=null
 					for j in range(HUD_points.size()):
-						if HUD_points[j][0][1]<0.3 && (HUD_points[j][0][2]-position).length()<50:
+						if HUD_points[j][0][1]<0.3 && (HUD_points[j][0][2]-position).length()<100:
 							if mindex==null || HUD_points[j][1][1]<HUD_points[mindex][1][1]:
 								mindex=j
-					if mindex:
+					if mindex!=null:
 						locked=enemies[mindex]
 					Jet.shoot(self,true,locked,true if Input.is_action_pressed("slow_turn") else false)
 					missiles-=1
@@ -116,11 +116,15 @@ func _on_bullet_hit():
 	health-=1
 	if health<=0:
 		die()
+	else:
+		get_node("/root/Main/UI").flash(0.1)
 
 func _on_missile_hit():
 	health-=5
 	if health<=0:
 		die()
+	else:
+		get_node("/root/Main/UI").flash(0.3)
 
 func die():
 	for missile in missiles_following:
@@ -132,4 +136,5 @@ func die():
 	get_node("/root/Main/UI/Endgame").show()
 	$CollisionShape3D.set_deferred("disabled",true)
 	$PlaceholderBody.hide()
+	get_node("/root/Main").explosion(position,0.35)
 	transform.basis=Basis(Vector3.RIGHT,Vector3(0,sqrt(3)/2,0.5),Vector3(0,-0.5,sqrt(3)/2))
