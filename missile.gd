@@ -7,7 +7,6 @@ var target=null
 func _ready():
 	contact_monitor=true
 	max_contacts_reported=1
-	continuous_cd=1
 	if target:
 		target.missiles_following.append(self)
 

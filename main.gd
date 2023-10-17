@@ -5,15 +5,29 @@ var bullet_scene=preload("res://bullet.tscn")
 var missile_scene=preload("res://missile.tscn")
 var explosion_scene=preload("res://explosion.tscn")
 var enemies=[]
-var initial_enemy_count=0
+var initial_enemy_count=5
 var current_camera=-1
 var gaming=true
 
+var bull
+var miss
+
 func _ready():
+	# first on screen instance of these objects (even though they're hidden by obstacles) lags the thing like hell so getting it out the way immediately stops it from affecting gameplay
+	bull=bullet_scene.instantiate()
+	miss=missile_scene.instantiate()
+	bull.position=Vector3(60,1,60)
+	bull.linear_velocity=Vector3.DOWN*100
+	miss.position=Vector3(60,1,60)
+	miss.transform.basis=miss.transform.basis.rotated(miss.transform.basis.x,PI/2)
+	add_child(bull)
+	add_child(miss)
+	await get_tree().create_timer(1.0).timeout
+	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
-		enemies[i].transform.origin=Vector3(0,6+i,15)
-		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,i*PI/initial_enemy_count)
+		enemies[i].transform.origin=Vector3(0,6,5)
+		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(i+1)*(PI/2)/(initial_enemy_count+1))
 		add_child(enemies[i])
 	current_camera=initial_enemy_count-1
 	update_camera()
@@ -31,6 +45,7 @@ func _on_enemy_die(dead):
 				if current_camera==i-1:
 					update_camera()
 			break
+	explosion(dead.position,true)
 	dead.queue_free()
 	
 	if enemies.size()==0:
@@ -53,7 +68,9 @@ func update_camera():
 func _on_restart_pressed():
 	get_tree().reload_current_scene()
 
-func explosion(location):
+func explosion(location,big=false):
 	var boom=explosion_scene.instantiate()
+	if big:
+		boom.cycle_length=0.35
 	boom.position=location
 	add_child(boom)

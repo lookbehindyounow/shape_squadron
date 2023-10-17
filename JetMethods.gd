@@ -56,14 +56,12 @@ static func instruct_aim(transform,target):
 	return [rolling,pitching,yawing,accelerating]
 
 static func instruct_avoid(transform,target):
-	var rolling=target[0]
-	if abs(rolling)>PI/2:
-		if rolling>PI/2:
-			rolling-=PI
-		else:
-			rolling+=PI
+	var target_direction=(target[2]-transform.origin).normalized()
+	var rolling=target_direction.dot(transform.basis.x)
+	if abs(target[0])<PI/2:
+		rolling*=-1
 	
-	var pitching=(target[2]-transform.origin).normalized().dot(transform.basis.z)
+	var pitching=target_direction.dot(transform.basis.z)
 	var accelerating=-pitching
 	pitching**=2
 	if abs(target[0])>PI/2:
@@ -107,7 +105,7 @@ static func autopilot(transform,speed,pitch_speed,HUD_points,state):
 	var to_avoid_point=null
 	for i in range(HUD_points.size()):
 		var to_point=(HUD_points[i][0][2]-transform.origin)
-		if to_point.length()<3: # if any are too close
+		if to_point.length()<4: # if any are too close
 			if (not to_avoid_point) || (to_point.length()<to_avoid_point.length()):
 				to_avoid_point=to_point
 				mindex=i

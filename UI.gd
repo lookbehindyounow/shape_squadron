@@ -7,7 +7,10 @@ var guy
 
 func _draw():
 	draw_arc(screen_dimensions/2,screen_dimensions.y/2.2,0,TAU,100,Color("#0f0"))
-	# crosshairs
+	var crosshair_points=[5*Vector2.UP,15*Vector2.UP,5*Vector2.DOWN,15*Vector2.DOWN,5*Vector2.LEFT,15*Vector2.LEFT,5*Vector2.RIGHT,15*Vector2.RIGHT]
+	for i in range(8):
+		crosshair_points[i]+=screen_dimensions/2.0
+	draw_multiline(crosshair_points,Color("#0f0"))
 
 func _ready():
 	guy=get_node("/root/Main/Player")
