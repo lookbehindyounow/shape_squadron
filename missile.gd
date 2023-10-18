@@ -4,6 +4,7 @@ signal hit
 var target=null
 var target_angles=null
 var watching=false
+var silent=false
 
 func _ready():
 	contact_monitor=true
@@ -11,6 +12,8 @@ func _ready():
 	continuous_cd=true
 	if target:
 		target.missiles_following.append(self)
+	if not silent:
+		$AudioStreamPlayer3D.play()
 
 func _process(delta):
 	life-=delta
@@ -28,16 +31,20 @@ func _process(delta):
 		var pitching=-3*target_angles[1]*cos(target_angles[0])
 		var yawing=-3*target_angles[1]*sin(target_angles[0])
 		transform.basis=target.Jet.turn(transform.basis,0,pitching,yawing,delta)
-		if target_angles[1]>PI/2:
+		if target_angles[1]>0.65:
 			target.missiles_following.erase(self)
 			target=null
 			target_angles=null
 	position+=20*delta*transform.basis.z
+	
+	if watching && Input.is_action_pressed("missile") && life>9.7 && life<9.75:
+		get_node("/root/Main/UI").missile=self
+		$Camera3D.current=true
 
 func explode():
 	if watching:
 		get_node("/root/Main/UI").missile=null
 	if target:
 		target.missiles_following.erase(self)
-	get_node("/root/Main").explosion(position)
+	get_node("/root/Main").explosion(position,0.2,silent)
 	queue_free()

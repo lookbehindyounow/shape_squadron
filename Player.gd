@@ -20,11 +20,6 @@ var yaw_momentum=0
 
 var ave_enemy_pos=Vector3.ZERO
 
-#var suggestions_on=false
-#func _unhandled_input(event):
-#	if InputMap.event_is_action(event,"toggle_suggestions") && event.pressed:
-#		suggestions_on=not suggestions_on
-
 func _physics_process(delta):
 	var gaming=get_node("/root/Main").gaming
 	var enemies=get_node("/root/Main").enemies
@@ -34,8 +29,8 @@ func _physics_process(delta):
 	if not gaming:
 		HUD_points=HUD_points.map(func(HUD_point): return [HUD_point[0],false,HUD_point[0][2]])
 	
-#	if suggestions_on:
-#		var suggestions=Jet.autopilot(transform,HUD_points)
+	if Input.is_action_just_pressed("restart"):
+		get_node("/root/Main")._on_restart_pressed()
 	
 	if gaming:
 		var rolling=0
@@ -43,27 +38,22 @@ func _physics_process(delta):
 		var yawing=0
 		var accelerating=0
 		
-		if Input.is_action_pressed("accelerate"):
-			accelerating+=1
-		if Input.is_action_pressed("decelerate"):
-			accelerating-=1
+		accelerating+=Input.get_action_strength("accelerate")
+		accelerating-=Input.get_action_strength("decelerate")
 		
-		if Input.is_action_pressed("pitch_up"):
-			pitching-=1
-		if Input.is_action_pressed("pitch_down"):
-			pitching+=1
-			
-		if Input.is_action_pressed("slow_turn"):
-			pitching*=0.2
-			if Input.is_action_pressed("roll_left"):
-				yawing+=1
-			if Input.is_action_pressed("roll_right"):
-				yawing-=1
-		else:
-			if Input.is_action_pressed("roll_left"):
-				rolling-=1
-			if Input.is_action_pressed("roll_right"):
-				rolling+=1
+		pitching-=Input.get_action_strength("pitch_up")
+		pitching+=Input.get_action_strength("pitch_down")
+		rolling-=Input.get_action_strength("roll_left")
+		rolling+=Input.get_action_strength("roll_right")
+		
+		pitching-=Input.get_action_strength("slight_pitch_up")/5
+		pitching+=Input.get_action_strength("slight_pitch_down")/5
+		yawing+=Input.get_action_strength("yaw_left")
+		yawing-=Input.get_action_strength("yaw_right")
+		
+		if abs(pitching)+abs(rolling)>1:
+			pitching=Jet.cap_absolute_at_1(pitching*2)
+			rolling=Jet.cap_absolute_at_1(rolling*2)
 		
 		if Input.is_action_pressed("shoot"):
 			if cooldown<0:
@@ -83,7 +73,7 @@ func _physics_process(delta):
 								mindex=j
 					if mindex!=null:
 						locked=enemies[mindex]
-					Jet.shoot(self,true,locked,true if Input.is_action_pressed("slow_turn") else false)
+					Jet.shoot(self,true,locked,true)
 					missiles-=1
 					missile_cooldowns[i]=1.5
 					break
@@ -110,10 +100,11 @@ func _physics_process(delta):
 		transform.origin=ave_enemy_pos
 		transform.basis=transform.basis.rotated(Vector3.UP,0.02*TAU*delta)
 		transform.origin-=30*transform.basis.z
-		# when explosions are working could zoom out from exploding jet & glide towards this view
+		# could zoom out from exploding jet & glide towards this view
 
 func _on_bullet_hit():
 	health-=1
+	$HitSound.play()
 	if health<=0:
 		die()
 	else:
@@ -136,5 +127,5 @@ func die():
 	get_node("/root/Main/UI/Endgame").show()
 	$CollisionShape3D.set_deferred("disabled",true)
 	$PlaceholderBody.hide()
-	get_node("/root/Main").explosion(position,0.35)
+	get_node("/root/Main").explosion(position,0.5)
 	transform.basis=Basis(Vector3.RIGHT,Vector3(0,sqrt(3)/2,0.5),Vector3(0,-0.5,sqrt(3)/2))

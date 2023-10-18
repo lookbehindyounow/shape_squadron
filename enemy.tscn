@@ -1,9 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://beb8a4ck3g5hf"]
+[gd_scene load_steps=5 format=3 uid="uid://beb8a4ck3g5hf"]
 
 [ext_resource type="Script" path="res://Enemy.gd" id="1_jpjpq"]
+[ext_resource type="AudioStream" uid="uid://bwirerlq6pkxf" path="res://sounds/bullet_outside.mp3" id="2_njxqi"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_f6csk"]
-size = Vector3(0.8, 0.25, 1)
+size = Vector3(1, 0.5, 1.5)
 
 [sub_resource type="PrismMesh" id="PrismMesh_mr05l"]
 size = Vector3(0.8, 1, 0.25)
@@ -23,3 +24,8 @@ mesh = SubResource("PrismMesh_mr05l")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_njxqi")
+attenuation_model = 1
+max_polyphony = 3

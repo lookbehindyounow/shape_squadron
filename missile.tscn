@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://csnmb33hr5et1"]
+[gd_scene load_steps=6 format=3 uid="uid://csnmb33hr5et1"]
 
 [ext_resource type="Script" path="res://missile.gd" id="1_lsah4"]
+[ext_resource type="AudioStream" uid="uid://bcq16wi28nqe0" path="res://sounds/missile_swoosh+knows.mp3" id="2_kti0b"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_icqnq"]
 top_radius = 0.05
@@ -35,3 +36,7 @@ shape = SubResource("CylinderShape3D_jqlor")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_kti0b")
+attenuation_model = 1

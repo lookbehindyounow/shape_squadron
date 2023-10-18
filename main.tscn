@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bk76cujr3ye4k"]
+[gd_scene load_steps=15 format=3 uid="uid://bk76cujr3ye4k"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_6rvo3"]
 [ext_resource type="PackedScene" uid="uid://c5wlatravmab7" path="res://player.tscn" id="1_uil6o"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://UI.gd" id="4_41i2s"]
 [ext_resource type="Texture2D" uid="uid://dnpihanfj3aom" path="res://carpet.jpg" id="4_lpqbg"]
 [ext_resource type="FontFile" uid="uid://chu7cr3o6gib4" path="res://Xolonium-Regular.ttf" id="6_88733"]
+[ext_resource type="AudioStream" uid="uid://bg2wtwpklg32k" path="res://sounds/illegal_soundtrack.mp3" id="8_rrxwg"]
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_qjwdv"]
 
@@ -114,5 +115,8 @@ color = Color(1, 0, 0, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.939693, -0.241845, -0.241845, 0, -0.707107, 0.707107, -0.34202, -0.664463, -0.664463, 0, 50, 0)
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_rrxwg")
 
 [connection signal="pressed" from="UI/Endgame/Restart" to="." method="_on_restart_pressed"]

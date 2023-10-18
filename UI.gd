@@ -25,7 +25,7 @@ func _process(delta):
 	if missile || guy.health==0:
 		$StatusLabel.text=""
 	else:
-		$StatusLabel.text="Health: %s\nMissiles: %s" %[guy.health,guy.missiles]
+		$StatusLabel.text="Health: %s\nMissiles: %s\nSpeed: %s\nAltitude: %s" %[guy.health,guy.missiles,round(guy.speed*10)/10,round(guy.transform.origin.y*10)/10]
 	
 	for entity in icons:
 		for icon in entity:
@@ -44,7 +44,7 @@ func _process(delta):
 				icon.set_type("locked")
 			icons.append([icon])
 			add_child(icons[0][0])
-		if not Input.is_action_pressed("slow_turn"):
+		if not Input.is_action_pressed("missile"):
 			guy.get_node("Camera3D").current=true
 			missile.watching=false
 			missile=null

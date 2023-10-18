@@ -10,16 +10,18 @@ var current_camera=-1
 var gaming=true
 
 func _ready():
+	$Music.play(MusicContinuity.playback_pos)
 	# first on screen instance of these objects (even though they're hidden by obstacles) lags the thing like hell so getting it out the way immediately stops it from affecting gameplay
 	var bull=bullet_scene.instantiate()
 	var miss=missile_scene.instantiate()
 	bull.position=Vector3(60,1,60)
-	bull.linear_velocity=Vector3.DOWN*100
 	miss.position=Vector3(60,1,60)
+	bull.linear_velocity=Vector3.DOWN*100
 	miss.transform.basis=miss.transform.basis.rotated(miss.transform.basis.x,PI/2)
+	miss.silent=true
 	add_child(bull)
 	add_child(miss)
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1).timeout
 	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
@@ -64,10 +66,13 @@ func update_camera():
 		$UI.missile=null
 
 func _on_restart_pressed():
+	MusicContinuity.playback_pos=$Music.get_playback_position()
 	get_tree().reload_current_scene()
 
-func explosion(location,cycle_length=0.2):
+func explosion(location,cycle_length,silent=false):
 	var boom=explosion_scene.instantiate()
 	boom.cycle_length=cycle_length
 	boom.position=location
+	if silent:
+		boom.get_node("AudioStreamPlayer3D").volume_db=-100
 	add_child(boom)

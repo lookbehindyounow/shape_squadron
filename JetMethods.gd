@@ -139,11 +139,10 @@ static func shoot(shooter,missile=false,locked=null,camera=false):
 		weapon.target=locked
 	else:
 		weapon=shooter.get_node("/root/Main").bullet_scene.instantiate()
+		shooter.get_node("AudioStreamPlayer3D").play()
 	weapon.transform=shooter.transform
-	weapon.position+=shooter.transform.basis.z
+	weapon.position+=1.5*shooter.transform.basis.z
 	weapon.linear_velocity=weapon.transform.basis.z*100
 	shooter.get_node("/root/Main").add_child(weapon)
 	if camera:
-		weapon.get_node("Camera3D").current=true
-		weapon.get_node("/root/Main/UI").missile=weapon
 		weapon.watching=true
