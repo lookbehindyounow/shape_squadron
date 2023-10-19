@@ -76,3 +76,7 @@ func explosion(location,cycle_length,silent=false):
 	if silent:
 		boom.get_node("AudioStreamPlayer3D").volume_db=-100
 	add_child(boom)
+
+
+func _on_music_finished():
+	$Music.play()
