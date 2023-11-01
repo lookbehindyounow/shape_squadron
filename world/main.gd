@@ -1,9 +1,9 @@
 extends Node
 
-var enemy_scene=preload("res://enemy.tscn")
-var bullet_scene=preload("res://bullet.tscn")
-var missile_scene=preload("res://missile.tscn")
-var explosion_scene=preload("res://explosion.tscn")
+var enemy_scene=preload("res://players/enemy.tscn")
+var bullet_scene=preload("res://weapons/bullet.tscn")
+var missile_scene=preload("res://weapons/missile.tscn")
+var explosion_scene=preload("res://explosions/explosion.tscn")
 var enemies=[]
 var initial_enemy_count=5
 var current_camera=-1
@@ -76,7 +76,6 @@ func explosion(location,cycle_length,silent=false):
 	if silent:
 		boom.get_node("AudioStreamPlayer3D").volume_db=-100
 	add_child(boom)
-
 
 func _on_music_finished():
 	$Music.play()

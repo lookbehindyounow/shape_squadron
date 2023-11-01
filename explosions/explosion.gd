@@ -2,9 +2,9 @@ extends MeshInstance3D
 var cycle_length=0.2
 var life
 var switched=false
-var fader=preload("res://explosion.tres")
-var explosion_sound=preload("res://sounds/explosion.mp3")
-var big_explosion_sound=preload("res://sounds/big_explosion.mp3")
+var fader=preload("res://explosions/explosion.tres")
+var explosion_sound=preload("res://explosions/explosion.mp3")
+var big_explosion_sound=preload("res://explosions/big_explosion.mp3")
 
 func _ready():
 	life=2*cycle_length

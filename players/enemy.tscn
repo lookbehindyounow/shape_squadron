@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://beb8a4ck3g5hf"]
 
-[ext_resource type="Script" path="res://Enemy.gd" id="1_jpjpq"]
-[ext_resource type="AudioStream" uid="uid://bwirerlq6pkxf" path="res://sounds/bullet_outside.mp3" id="2_njxqi"]
+[ext_resource type="Script" path="res://players/Enemy.gd" id="1_ndvo2"]
+[ext_resource type="AudioStream" uid="uid://bwirerlq6pkxf" path="res://players/enemy_firing.mp3" id="2_grng7"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_f6csk"]
 size = Vector3(1, 0.5, 1.5)
@@ -13,7 +13,7 @@ size = Vector3(0.8, 1, 0.25)
 rotation_order = 4
 collision_layer = 2
 collision_mask = 11
-script = ExtResource("1_jpjpq")
+script = ExtResource("1_ndvo2")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_f6csk")
@@ -26,6 +26,6 @@ mesh = SubResource("PrismMesh_mr05l")
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
-stream = ExtResource("2_njxqi")
+stream = ExtResource("2_grng7")
 attenuation_model = 1
 max_polyphony = 3

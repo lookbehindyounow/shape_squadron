@@ -1,6 +1,6 @@
 extends Control
 var screen_dimensions
-var icon_scene=preload("res://icon.tscn")
+var icon_scene=preload("res://UI/icon.tscn")
 var icons=[]
 var missilecons=[]
 var guy

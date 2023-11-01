@@ -1,5 +1,5 @@
 extends CharacterBody3D
-var Jet=preload("res://JetMethods.gd")
+var Jet=preload("res://players/JetMethods.gd")
 var health=50
 const acceleration=2
 const top_speed=15

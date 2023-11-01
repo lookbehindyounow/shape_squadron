@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://c5wlatravmab7"]
 
-[ext_resource type="Script" path="res://Player.gd" id="1_04am3"]
-[ext_resource type="AudioStream" uid="uid://ce7w58hvej4xj" path="res://sounds/bullet_inside.mp3" id="2_7233l"]
-[ext_resource type="AudioStream" uid="uid://pl73nhff8hsp" path="res://sounds/bullet_hit.mp3" id="3_n8fgm"]
+[ext_resource type="Script" path="res://players/Player.gd" id="1_04am3"]
+[ext_resource type="AudioStream" uid="uid://ce7w58hvej4xj" path="res://players/player_firing.mp3" id="2_ejtfg"]
+[ext_resource type="AudioStream" uid="uid://pl73nhff8hsp" path="res://players/bullet_hit.mp3" id="3_x3ycn"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_f6csk"]
 size = Vector3(0.8, 0.25, 1)
@@ -26,12 +26,12 @@ mesh = SubResource("PrismMesh_mr05l")
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
-stream = ExtResource("2_7233l")
+stream = ExtResource("2_ejtfg")
 attenuation_model = 3
 volume_db = -2.0
 max_db = -6.0
 
 [node name="HitSound" type="AudioStreamPlayer3D" parent="."]
-stream = ExtResource("3_n8fgm")
+stream = ExtResource("3_x3ycn")
 attenuation_model = 3
 volume_db = -2.0
