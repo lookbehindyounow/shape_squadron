@@ -1,8 +1,0 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bkssadhl1ub0n"]
-
-[ext_resource type="Shader" path="res://explosions/explosion.gdshader" id="1_nl3t7"]
-
-[resource]
-render_priority = 0
-shader = ExtResource("1_nl3t7")
-shader_parameter/fade = 1.0

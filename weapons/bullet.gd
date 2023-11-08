@@ -7,7 +7,7 @@ func _ready():
 	max_contacts_reported=1
 	continuous_cd=1
 
-func _process(delta):
+func _physics_process(delta):
 	life-=delta
 	if life<0:
 		queue_free()

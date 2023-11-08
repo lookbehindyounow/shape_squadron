@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://bukv0lj4471ts"]
+
+[ext_resource type="Script" path="res://chemtrails/chemtrail.gd" id="1_xrfbx"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w6fd6"]
+transparency = 1
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="SphereMesh_4hq3o"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_w6fd6")
+radius = 0.1
+height = 2.0
+
+[node name="Chemtrail" type="MeshInstance3D"]
+mesh = SubResource("SphereMesh_4hq3o")
+script = ExtResource("1_xrfbx")

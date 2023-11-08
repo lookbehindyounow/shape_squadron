@@ -15,7 +15,7 @@ func _ready():
 	if not silent:
 		$AudioStreamPlayer3D.play()
 
-func _process(delta):
+func _physics_process(delta):
 	life-=delta
 	if life<0:
 		explode()
@@ -28,14 +28,14 @@ func _process(delta):
 	
 	if target:
 		target_angles=target.Jet.get_HUD_angles(transform,target.position)
-		var pitching=-3*target_angles[1]*cos(target_angles[0])
-		var yawing=-3*target_angles[1]*sin(target_angles[0])
+		var pitching=-4*target_angles[1]*cos(target_angles[0])
+		var yawing=-4*target_angles[1]*sin(target_angles[0])
 		transform.basis=target.Jet.turn(transform.basis,0,pitching,yawing,delta)
 		if target_angles[1]>0.65:
 			target.missiles_following.erase(self)
 			target=null
 			target_angles=null
-	position+=20*delta*transform.basis.z
+	position+=25*delta*transform.basis.z
 	
 	if watching && Input.is_action_pressed("missile") && life>9.7 && life<9.75:
 		get_node("/root/Main/UI").missile=self
@@ -46,5 +46,5 @@ func explode():
 		get_node("/root/Main/UI").missile=null
 	if target:
 		target.missiles_following.erase(self)
-	get_node("/root/Main").explosion(position,0.2,silent)
+	get_node("/root/Main").explosion(position,0.4,silent)
 	queue_free()

@@ -1,32 +1,28 @@
 extends MeshInstance3D
-var cycle_length=0.2
 var life
-var switched=false
-var fader=preload("res://explosions/explosion.tres")
+var total_life
 var explosion_sound=preload("res://explosions/explosion.mp3")
 var big_explosion_sound=preload("res://explosions/big_explosion.mp3")
 
 func _ready():
-	life=2*cycle_length
-	if cycle_length>0.3:
+	total_life=life
+	if life>0.5:
 		$AudioStreamPlayer3D.set_stream(big_explosion_sound)
-		if cycle_length>0.45:
+		if life>0.8:
 			$AudioStreamPlayer3D.volume_db=-6
 			$AudioStreamPlayer3D.attenuation_model=3
 	else:
 		$AudioStreamPlayer3D.set_stream(explosion_sound)
 	$AudioStreamPlayer3D.play()
+	
+	mesh.material=StandardMaterial3D.new()
+	mesh.material.set_transparency(1)
+	mesh.material.flags_unshaded=true
+	mesh.material.albedo_color=Color("#ff9300")
 
-func _process(delta):
-	if life>cycle_length:
-		mesh.material.albedo_color=Color("#ff9300")*(0.5+0.5*(life-cycle_length)/cycle_length)
-	elif life>0:
-		if switched:
-			mesh.material.set_shader_parameter("fade",life/cycle_length)
-		else:
-			switched=true
-			mesh.material=fader
-	else:
+func _physics_process(delta):
+	mesh.material.albedo_color.a=life/total_life
+	scale+=Vector3(1,1,1)*((life**2)/(2.0))
+	if life<0:
 		queue_free()
-	scale+=Vector3(1,1,1)*((life**2)/2)
 	life-=delta

@@ -6,7 +6,7 @@ const top_speed=15
 const roll_speed=1
 const pitch_speed=1
 const yaw_speed=0.2
-var speed=0
+var speed=top_speed
 var hits_taken=0
 var crashes=0
 var cooldown=0
@@ -16,8 +16,9 @@ var missiles_following=[]
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
-var yaw_momentum=0
+var chemtrail_counter=0
 
+var yaw_momentum=0
 var ave_enemy_pos=Vector3.ZERO
 
 func _physics_process(delta):
@@ -80,14 +81,22 @@ func _physics_process(delta):
 		for i in range(missile_cooldowns.size()):
 			missile_cooldowns[i]-=delta
 		
-		roll_momentum=(10.0*roll_momentum+rolling)/11
-		pitch_momentum=(10.0*pitch_momentum+pitching)/11
-		yaw_momentum=(10.0*yaw_momentum+yawing)/11
+		roll_momentum=(7.0*roll_momentum+rolling)/8
+		pitch_momentum=(7.0*pitch_momentum+pitching)/8
+		yaw_momentum=(7.0*yaw_momentum+yawing)/8
 		
 		speed=min(speed+(accelerating*acceleration*delta),top_speed)
 		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
 		velocity=transform.basis.z*speed
 		move_and_slide()
+		
+		chemtrail_counter+=1
+		if chemtrail_counter>7:
+			chemtrail_counter=0
+			var chem=get_node("/root/Main").chemtrail_scene.instantiate()
+			chem.position=position
+			chem.transform.basis=transform.basis.rotated(transform.basis.x,PI/2)
+			get_node("/root/Main").add_child(chem)
 		
 		for i in range(get_slide_collision_count()):
 			if not get_slide_collision(i).get_collider().is_in_group("weapons"):
@@ -127,5 +136,5 @@ func die():
 	get_node("/root/Main/UI/Endgame").show()
 	$CollisionShape3D.set_deferred("disabled",true)
 	$PlaceholderBody.hide()
-	get_node("/root/Main").explosion(position,0.5)
+	get_node("/root/Main").explosion(position,1)
 	transform.basis=Basis(Vector3.RIGHT,Vector3(0,sqrt(3)/2,0.5),Vector3(0,-0.5,sqrt(3)/2))

@@ -16,6 +16,7 @@ var missiles_following=[]
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
+var chemtrail_counter=0
 
 signal die
 func _ready():
@@ -26,7 +27,7 @@ func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_chillin") && event.pressed:
 		chillin=not chillin
 
-var state="towards"
+var state=["towards",0,-1]
 var prev_targ_dist=0
 
 func _physics_process(delta):
@@ -63,18 +64,36 @@ func _physics_process(delta):
 		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following) # change to just point locations (& ahead locations for enemies)
 		
 		state=instructions[4]
-		if target_distance<20 && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.9*speed*delta:
-			state="away"
+		state[1]+=1
+		if target_distance>200: # if far away
+			state[0]="towards"
+			state[1]=0
+		elif state[0]=="towards" && state[1]>500: # if chasing tails for more than 8s
+			state[0]="away"
+			state[1]=0
+		elif state[0]=="away" && state[1]>randi_range(200,20000): # if been retreating for a while
+			state[0]="towards"
+			state[1]=0
+		elif target_distance<randf_range(18,22) && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.9*speed*delta:
+			# if playing chicken & getting close
+			state[0]="away"
+			state[1]=0
 		prev_targ_dist=target_distance
-		if target_distance>50:
-			state="towards"
 		
-		roll_momentum=(10.0*roll_momentum+instructions[0])/11
-		pitch_momentum=(10.0*pitch_momentum+instructions[1])/11
+		roll_momentum=(7.0*roll_momentum+instructions[0])/8
+		pitch_momentum=(7.0*pitch_momentum+instructions[1])/8
 		
 		speed=min(speed+(instructions[3]*acceleration*delta),top_speed)
 		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,instructions[2]*yaw_speed,delta)
 		velocity=transform.basis.z*speed
+
+		chemtrail_counter+=1
+		if chemtrail_counter>7:
+			chemtrail_counter=0
+			var chem=get_node("/root/Main").chemtrail_scene.instantiate()
+			chem.position=position
+			chem.transform.basis=transform.basis.rotated(transform.basis.x,PI/2)
+			get_node("/root/Main").add_child(chem)
 	move_and_slide()
 	
 	if not gaming: # remove spoof player from HUD points so it doesn't show up on enemies HUD when rendered in UI
