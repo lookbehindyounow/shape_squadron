@@ -62,13 +62,11 @@ static func instruct_aim(transform,target):
 static func instruct_avoid(transform,target):
 	var target_direction=(target[2]-transform.origin).normalized()
 	var rolling=target_direction.dot(transform.basis.x)
+	var accelerating=-target_direction.dot(transform.basis.z)
+	var pitching=accelerating-1 # pitching needs to be based on z for when playing chicken
+	
 	if abs(target[0])<PI/2:
 		rolling*=-1
-	
-	var pitching=target_direction.dot(transform.basis.z)
-	var accelerating=-pitching
-	pitching**=2
-	if abs(target[0])>PI/2:
 		pitching*=-1
 	
 	return [rolling,pitching,0,accelerating]

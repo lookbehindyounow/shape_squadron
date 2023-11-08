@@ -35,6 +35,6 @@ I haven't updated the game since the end of the project other than to reorganise
 - take off & landing, maybe mid-air refueling as well
 - leaderboards hosted online, if I have missions I could also have an arcade mode with waves of enemies
 - non-copyrighted music
-- rolling altimeter in HUD
+- ray cast obstacle detection
 - gravity & stalling
 - customisable controls from a menu within the game

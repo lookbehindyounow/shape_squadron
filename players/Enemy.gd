@@ -68,16 +68,19 @@ func _physics_process(delta):
 		if target_distance>200: # if far away
 			state[0]="towards"
 			state[1]=0
-		elif state[0]=="towards" && state[1]>500: # if chasing tails for more than 8s
+		elif target_distance<randf_range(18,22) && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.9*speed*delta:
+			# if playing chicken & getting close
 			state[0]="away"
 			state[1]=0
 		elif state[0]=="away" && state[1]>randi_range(200,20000): # if been retreating for a while
 			state[0]="towards"
 			state[1]=0
-		elif target_distance<randf_range(18,22) && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.9*speed*delta:
-			# if playing chicken & getting close
-			state[0]="away"
-			state[1]=0
+		elif state[0]=="towards": # if pursuing
+			if HUD_points[0][1][1]<0.3: # & target infront
+				state[1]=0 # forget how long been pursuing
+			elif state[1]>500: # if chasing tails for more than 8s
+				state[0]="away"
+				state[1]=0
 		prev_targ_dist=target_distance
 		
 		roll_momentum=(7.0*roll_momentum+instructions[0])/8

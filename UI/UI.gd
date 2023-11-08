@@ -6,8 +6,7 @@ var icons=[]
 var missilecons=[]
 var guy
 var missile=null
-var prev_ground_angle=PI/2
-var ground_angle_momentum=PI/2
+var gyro_angle_momentum=PI/2
 
 func _draw():
 	draw_arc(screen_dimensions/2,screen_dimensions.y/2.2,0,TAU,100,Color("#0f0"))
@@ -17,42 +16,41 @@ func _draw():
 		crosshair_points[i]+=screen_dimensions/2.0
 	draw_multiline(crosshair_points,Color("#0f0"))
 	
-	if guy: # rolling altimeter
+	if guy && guy.health>0: # rolling altimeter
 		var altitude=guy.transform.origin.y
 		var centre=screen_dimensions/2.0
 		var rolling=[] # draw points to be rotated
 		
-		# gyroscope angle
-		var ground_angle=acos(guy.transform.basis.x.dot(Vector3.UP))*sign(guy.transform.basis.y.dot(Vector3.UP))
-		var ang_diff=ground_angle-prev_ground_angle # rotation speed limit
-		if abs(ang_diff)>2*PI-0.05: # if crossed over +/-PI
-			pass
-			ground_angle=(abs(ground_angle)+0.05-2*PI)*sign(ang_diff)
-			print()
-			print(ground_angle)
-			print(prev_ground_angle)
-		elif abs(ang_diff)>PI:
-			ground_angle=prev_ground_angle-0.05*sign(ang_diff)
-		elif abs(ang_diff)>0.05:
-			ground_angle=prev_ground_angle+0.05*sign(ang_diff)
-		ground_angle_momentum=(ground_angle_momentum*2.0+ground_angle)/3.0 # rotation speed smoothing
-#		ground_angle_momentum=ground_angleSSD
-		prev_ground_angle=ground_angle_momentum
+		# to find gyroscopic rotation angle, first project global up vector onto viewport plane
+		var view_projected_up=Vector3.UP-guy.transform.basis.z.dot(Vector3.UP)*guy.transform.basis.z
+		# the angle between said vector & the viewport's up vector is the angle to true up from viewport clock face up
+		var gyro_angle=guy.transform.basis.y.signed_angle_to(view_projected_up,guy.transform.basis.z)
+		# if proposed change in rotation greater than half a circle, then we are crossing +/-PI (turning upsidedown)
+		if abs(gyro_angle-gyro_angle_momentum)>PI:
+			# rotate in other direction instead, now abs(gyro_angle)>PI
+			gyro_angle=(2*PI-abs(gyro_angle))*sign(gyro_angle_momentum)
+		# rotation speed smoothing can now take place without worrying about crossing +/-PI messing up averages
+		gyro_angle_momentum=(gyro_angle_momentum*2.0+gyro_angle)/3.0
+		# if +/-PI is crossed
+		if abs(gyro_angle_momentum)>PI:
+			# wrap smoothed angle so new measured angles will have the same sign
+			gyro_angle_momentum=(2*PI-abs(gyro_angle_momentum))*sign(gyro_angle_momentum)*-1
 		
-		var height=(fmod(0.5+altitude/10.0,1)-0.5)*Vector2.RIGHT # roll amount
-		var lowght=(fmod(guy.transform.origin.y/10.0,1)-0.5)*Vector2.RIGHT
-		rolling+=[0.8*Vector2.UP+height,0.2*Vector2.UP+height,0.8*Vector2.DOWN+height,0.2*Vector2.DOWN+height]
-		rolling+=[0.8*Vector2.UP+lowght,0.8*Vector2.DOWN+lowght]
+		# rolling
+		var height=(fmod(0.5+altitude/10.0,1)-0.5)*Vector2.UP # offset for 10 line (where the number is)
+		var lowght=(fmod(altitude/10.0,1)-0.5)*Vector2.UP # offset for 5 line
+		rolling+=[0.8*Vector2.LEFT+height,0.2*Vector2.LEFT+height,0.8*Vector2.RIGHT+height,0.2*Vector2.RIGHT+height] # 10 line
+		rolling+=[0.8*Vector2.LEFT+lowght,0.8*Vector2.RIGHT+lowght] # 5 line
 		
-		rolling+=[Vector2.UP,3*Vector2.UP,Vector2.DOWN,3*Vector2.DOWN] # ground parallel lines
-		rolling+=[Vector2.UP+0.5*Vector2.LEFT,Vector2.UP+0.5*Vector2.RIGHT,Vector2.DOWN+0.5*Vector2.RIGHT,Vector2.DOWN+0.5*Vector2.LEFT] # beside rolling altimeter
+		rolling+=[Vector2.LEFT,3*Vector2.LEFT,Vector2.RIGHT,3*Vector2.RIGHT] # ground parallel lines
+		rolling+=[0.5*Vector2.UP+Vector2.LEFT,0.5*Vector2.DOWN+Vector2.LEFT,0.5*Vector2.UP+Vector2.RIGHT,0.5*Vector2.DOWN+Vector2.RIGHT] # lines containing rolling altimeter
 		
 		for i in rolling.size(): # gyroscopic rotation & scaling
-			rolling[i]=screen_dimensions.y/6.6*rolling[i].rotated(ground_angle_momentum)
+			rolling[i]=screen_dimensions.y/6.6*rolling[i].rotated(gyro_angle_momentum)
 		for i in rolling.size()/2: # drawing lines from pairs
 			draw_line(centre+rolling[2*i],centre+rolling[2*i+1],Color("#0f0"))
 		
-		var number_pos=centre+10*Vector2.DOWN+(screen_dimensions.y/6.6)*height.rotated(ground_angle_momentum) # altitude reading
+		var number_pos=centre+12*Vector2.DOWN+(screen_dimensions.y/6.6)*height.rotated(gyro_angle_momentum) # altitude reading
 		draw_char(font,number_pos+30*Vector2.LEFT,str(10*round(altitude/10.0))[0],40,Color("#0f0"))
 		draw_char(font,number_pos,(str(10*round(altitude/10.0))+"0")[1],40,Color("#0f0"))
 
@@ -68,7 +66,6 @@ func _physics_process(delta):
 	if missile || guy.health==0:
 		$StatusLabel.text=""
 	else:
-		
 		$StatusLabel.text="Health: %s\nMissiles: %s\nSpeed: %s" %[guy.health,guy.missiles,round(guy.speed*10)/10.0]
 	
 	for entity in icons:
@@ -131,6 +128,7 @@ func _physics_process(delta):
 						mindex=i
 		if mindex!=null:
 			icons[mindex][0].set_type("locked")
+	queue_redraw()
 
 func flash(amount):
 	if $Pain.color.a<1:

@@ -23,7 +23,6 @@ func _ready():
 	miss.silent=true
 	add_child(bull)
 	add_child(miss)
-	await get_tree().create_timer(1).timeout
 	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
