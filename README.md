@@ -38,3 +38,4 @@ I haven't updated the game since the end of the project other than to reorganise
 - ray cast obstacle detection
 - gravity & stalling
 - customisable controls from a menu within the game
+- easy way to set up scenarios for testing enemy behaviour (unit testing needed as well)
