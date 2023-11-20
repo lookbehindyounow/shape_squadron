@@ -16,9 +16,9 @@ var missiles_following=[]
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
+var yaw_momentum=0
 var chemtrail_counter=0
 
-var yaw_momentum=0
 var ave_enemy_pos=Vector3.ZERO
 
 func _physics_process(delta):
@@ -28,7 +28,7 @@ func _physics_process(delta):
 	for enemy in enemies:
 		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity,gaming))
 	if not gaming:
-		HUD_points=HUD_points.map(func(HUD_point): return [HUD_point[0],false,HUD_point[0][2]])
+		HUD_points=HUD_points.map(func(HUD_point): return [HUD_point[0],false])
 	
 	if Input.is_action_just_pressed("restart"):
 		get_node("/root/Main")._on_restart_pressed()
@@ -47,8 +47,8 @@ func _physics_process(delta):
 		rolling-=Input.get_action_strength("roll_left")
 		rolling+=Input.get_action_strength("roll_right")
 		
-		pitching-=Input.get_action_strength("slight_pitch_up")/5
-		pitching+=Input.get_action_strength("slight_pitch_down")/5
+		pitching-=Input.get_action_strength("slight_pitch_up")*yaw_speed
+		pitching+=Input.get_action_strength("slight_pitch_down")*yaw_speed
 		yawing+=Input.get_action_strength("yaw_left")
 		yawing-=Input.get_action_strength("yaw_right")
 		
@@ -58,7 +58,8 @@ func _physics_process(delta):
 		
 		if Input.is_action_pressed("shoot"):
 			if cooldown<0:
-				Jet.shoot(self)
+				get_node("/root/Main").bullet(transform)
+				$AudioStreamPlayer3D.play()
 				cooldown=0.05
 			else:
 				cooldown-=delta
@@ -74,7 +75,7 @@ func _physics_process(delta):
 								mindex=j
 					if mindex!=null:
 						locked=enemies[mindex]
-					Jet.shoot(self,true,locked,true)
+					get_node("/root/Main").missile(transform,locked,true)
 					missiles-=1
 					missile_cooldowns[i]=1.5
 					break
@@ -85,7 +86,8 @@ func _physics_process(delta):
 		pitch_momentum=(7.0*pitch_momentum+pitching)/8
 		yaw_momentum=(7.0*yaw_momentum+yawing)/8
 		
-		speed=min(speed+(accelerating*acceleration*delta),top_speed)
+		speed=min(max(speed+(accelerating*acceleration*delta),5),top_speed)
+#		speed=min(speed+(accelerating*acceleration*delta),top_speed)
 		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
 		velocity=transform.basis.z*speed
 		move_and_slide()
@@ -93,10 +95,7 @@ func _physics_process(delta):
 		chemtrail_counter+=1
 		if chemtrail_counter>7:
 			chemtrail_counter=0
-			var chem=get_node("/root/Main").chemtrail_scene.instantiate()
-			chem.position=position
-			chem.transform.basis=transform.basis.rotated(transform.basis.x,PI/2)
-			get_node("/root/Main").add_child(chem)
+			get_node("/root/Main").chemtrail(transform)
 		
 		for i in range(get_slide_collision_count()):
 			if not get_slide_collision(i).get_collider().is_in_group("weapons"):
@@ -104,7 +103,7 @@ func _physics_process(delta):
 	else:
 		var sum=Vector3.ZERO
 		for HUD_point in HUD_points:
-			sum+=HUD_point[2]
+			sum+=HUD_point[0][2]
 		ave_enemy_pos=sum/HUD_points.size()
 		transform.origin=ave_enemy_pos
 		transform.basis=transform.basis.rotated(Vector3.UP,0.02*TAU*delta)

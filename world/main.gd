@@ -16,18 +16,14 @@ func _ready():
 	# first on screen instance of these objects (even though they're hidden by obstacles) lags the thing like hell so getting it out the way immediately stops it from affecting gameplay
 	var bull=bullet_scene.instantiate()
 	var miss=missile_scene.instantiate()
-	bull.position=Vector3(60,1,60)
-	miss.position=Vector3(60,10,60)
-	bull.linear_velocity=Vector3.DOWN*100
-	miss.transform.basis=miss.transform.basis.rotated(miss.transform.basis.x,PI/2)
-	miss.silent=true
+	bull.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,3,60)))
+	miss.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,4,60)),null,false,true)
 	add_child(bull)
 	add_child(miss)
 	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
-		enemies[i].transform.origin=Vector3(0,6,15)
-		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(i+randf_range(0.45,0.55))*(PI/2)/(initial_enemy_count))
+		enemies[i].transform.origin=Vector3(i*50.0/initial_enemy_count,10,0)
 		add_child(enemies[i])
 	current_camera=initial_enemy_count-1
 	update_camera()
@@ -70,6 +66,40 @@ func _on_restart_pressed():
 	MusicContinuity.playback_pos=$Music.get_playback_position()
 	get_tree().reload_current_scene()
 
+var chemtrail_pool=[]
+func chemtrail(_transform,_life=8):
+	var chem
+	if chemtrail_pool:
+		chem=chemtrail_pool[0]
+		chemtrail_pool.remove_at(0)
+	else:
+		chem=chemtrail_scene.instantiate()
+		add_child(chem)
+	chem.set_up(_transform,_life)
+
+var bullet_pool=[]
+func bullet(_transform):
+	var bull
+	if bullet_pool:
+		bull=bullet_pool[0]
+		bullet_pool.remove_at(0)
+	else:
+		bull=bullet_scene.instantiate()
+	bull.set_up(_transform)
+	add_child(bull)
+
+var missile_pool=[]
+func missile(_transform,_target,_watching):
+	var miss
+	if missile_pool:
+		miss=missile_pool[0]
+		missile_pool.remove_at(0)
+	else:
+		miss=missile_scene.instantiate()
+	miss.set_up(_transform,_target,_watching)
+	add_child(miss)
+	miss.get_node("AudioStreamPlayer3D").play()
+
 func explosion(location,life,silent=false):
 	var boom=explosion_scene.instantiate()
 	boom.life=life
@@ -77,6 +107,6 @@ func explosion(location,life,silent=false):
 	if silent:
 		boom.get_node("AudioStreamPlayer3D").volume_db=-100
 	add_child(boom)
-
+	
 func _on_music_finished():
 	$Music.play()
