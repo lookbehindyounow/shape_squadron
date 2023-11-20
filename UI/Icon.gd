@@ -10,7 +10,7 @@ func _draw():
 	elif type=="ahead":
 		draw_arc(Vector2.ZERO,15,0,TAU,9,colour,2)
 		draw_multiline([6*Vector2.UP,18*Vector2.UP,6*Vector2.DOWN,18*Vector2.DOWN,6*Vector2.LEFT,18*Vector2.LEFT,6*Vector2.RIGHT,18*Vector2.RIGHT],colour,2)
-	elif type=="locked":
+	if type=="locked":
 		draw_arc(Vector2.ZERO,10,0,TAU,13,colour)
 		var arrow=[Vector2(15,15),Vector2(30,20),Vector2(20,20),Vector2(20,30)]
 		for i in range(4):

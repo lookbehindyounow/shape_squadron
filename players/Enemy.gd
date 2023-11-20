@@ -16,6 +16,7 @@ var missiles_following=[]
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
+var yaw_momentum=0
 var chemtrail_counter=0
 
 signal die
@@ -27,7 +28,7 @@ func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_chillin") && event.pressed:
 		chillin=not chillin
 
-var state=["towards",0,-1]
+var state={"chasing":true,"chase_duration":0,"missile_memory":-1,"ground_memory":0}
 var prev_targ_dist=0
 
 func _physics_process(delta):
@@ -49,14 +50,15 @@ func _physics_process(delta):
 		var target_distance=(HUD_points[0][0][2]-position).length()
 		if gaming && target_distance<45 && HUD_points[0][1][1]<PI/12:
 			if cooldown<0:
-				Jet.shoot(self)
+				get_node("/root/Main").bullet(transform)
+				$AudioStreamPlayer3D.play()
 				cooldown=0.05
 			else:
 				cooldown-=delta
 		
 		if HUD_points[0][0][1]<0.3 && target_distance<50:
 			if missiles && missile_cooldown<0:
-				Jet.shoot(self,true,player)
+				get_node("/root/Main").missile(transform,player,false)
 				missiles-=1
 				missile_cooldown=3
 		missile_cooldown-=delta
@@ -64,39 +66,37 @@ func _physics_process(delta):
 		var instructions=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following) # change to just point locations (& ahead locations for enemies)
 		
 		state=instructions[4]
-		state[1]+=1
+		state.chase_duration+=1
 		if target_distance>200: # if far away
-			state[0]="towards"
-			state[1]=0
+			state.chasing=true
+			state.chase_duration=0
 		elif target_distance<randf_range(18,22) && HUD_points[0][0][1]<0.3 && prev_targ_dist-target_distance>0.9*speed*delta:
 			# if playing chicken & getting close
-			state[0]="away"
-			state[1]=0
-		elif state[0]=="away" && state[1]>randi_range(200,20000): # if been retreating for a while
-			state[0]="towards"
-			state[1]=0
-		elif state[0]=="towards": # if pursuing
+			state.chasing=false
+			state.chase_duration=0
+		elif !state.chasing && state.chase_duration>randi_range(200,20000): # if been retreating for a while
+			state.chasing=true
+			state.chase_duration=0
+		elif state.chasing: # if pursuing
 			if HUD_points[0][1][1]<0.3: # & target infront
-				state[1]=0 # forget how long been pursuing
-			elif state[1]>500: # if chasing tails for more than 8s
-				state[0]="away"
-				state[1]=0
+				state.chase_duration=0 # forget how long been pursuing
+			elif state.chase_duration>500: # if chasing tails for more than 8s
+				state.chasing=false
+				state.chase_duration=0
 		prev_targ_dist=target_distance
 		
 		roll_momentum=(7.0*roll_momentum+instructions[0])/8
 		pitch_momentum=(7.0*pitch_momentum+instructions[1])/8
+		yaw_momentum=(7.0*yaw_momentum+instructions[2])/8
 		
-		speed=min(speed+(instructions[3]*acceleration*delta),top_speed)
-		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,instructions[2]*yaw_speed,delta)
+		speed=min(max(speed+(instructions[3]*acceleration*delta),5),top_speed)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
 		velocity=transform.basis.z*speed
 
 		chemtrail_counter+=1
 		if chemtrail_counter>7:
 			chemtrail_counter=0
-			var chem=get_node("/root/Main").chemtrail_scene.instantiate()
-			chem.position=position
-			chem.transform.basis=transform.basis.rotated(transform.basis.x,PI/2)
-			get_node("/root/Main").add_child(chem)
+			get_node("/root/Main").chemtrail(transform)
 	move_and_slide()
 	
 	if not gaming: # remove spoof player from HUD points so it doesn't show up on enemies HUD when rendered in UI

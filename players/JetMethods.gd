@@ -72,21 +72,21 @@ static func instruct_avoid(transform,target):
 	return [rolling,pitching,0,accelerating]
 
 static func instruct_missiles(transform,missiles,state):
-	var min=0
+	var closest_dist=0
 	var mindex=0
 	for i in missiles.size():
-		if (transform.origin-missiles[i].position).length()<min:
-			min=(transform.origin-missiles[i].position).length()
+		if (transform.origin-missiles[i].position).length()<closest_dist:
+			closest_dist=(transform.origin-missiles[i].position).length()
 			mindex=i
 	
 	var look_instructions
-	if min>10:
+	if closest_dist>10:
 		look_instructions=instruct_look_at(transform,get_HUD_angles(transform,missiles[mindex].position))
-		state[2]=look_instructions[1]
+		state.missile_memory=look_instructions[1]
 	else:
 		if randf()<1.0/120:
-			state[2]*=-1
-		look_instructions=[sign(999.5-Time.get_ticks_msec()%2000),state[2]]
+			state.missile_memory*=-1
+		look_instructions=[sign(999.5-Time.get_ticks_msec()%2000),state.missile_memory]
 	return [look_instructions[0],look_instructions[1],0,1,state]
 
 static func cap_absolute_at_1(param):
@@ -98,55 +98,50 @@ static func cap_absolute_at_1(param):
 	return param
 
 static func autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following):
-	var multiplier=3
 	var instructions=[0,0,0,0]
 	var avoid_instructions=[0,0,0,0]
 	
 	if missiles_following:
 		instructions=instruct_missiles(transform,missiles_following,state)
 		state=instructions.pop_back()
-	elif state[0]=="towards":
+	elif state.chasing:
 		instructions=instruct_aim(transform,HUD_points[0][1]) # aim for player's ([0]) ahead/bullet_intercept ([1])
-	elif state[0]=="away":
+	else:
 		instructions=instruct_avoid(transform,HUD_points[0][0])
-	
-	if transform.origin.y<1+1.5*speed/pitch_speed: # if near ground
-		avoid_instructions[1]=state[2]
+
+	if transform.origin.y<1.5*speed/pitch_speed: # if near ground
 		var down_dot_myForward=Vector3.DOWN.dot(transform.basis.z)
 		if down_dot_myForward>0 && transform.origin.y<1+1.5*(speed/pitch_speed)*(1-sqrt(1-down_dot_myForward**2)): # if too near ground for current orientation
 			avoid_instructions[0]=transform.basis.x.dot(Vector3.UP) # roll positive when leftside up, roll negative when leftside down
 			if transform.basis.y.dot(Vector3.UP)>0: # upright
 				avoid_instructions[0]*=-1
 				avoid_instructions[1]=-1 # pitch up when upright
-				state[2]=-1
+				state.ground_memory=-1
 			else:
 				avoid_instructions[1]=1 # pitch down when upsidedown
-				state[2]=1
+				state.ground_memory=1
 				# roll negative (left) when leftside up & upright
 				# roll positive (right) when leftside down & upright
 			# roll positive (right) when leftside up & upsidedown
 			# roll negative (left) when leftside down & upsidedown
-	
-	var mindex=0
-	var to_avoid_point=null
-	for i in range(HUD_points.size()):
-		var to_point=(HUD_points[i][0][2]-transform.origin)
-		if to_point.length()<randf_range(4,7): # if any are too close
-			if to_avoid_point==null || (to_point.length()<to_avoid_point.length()):
-				to_avoid_point=to_point
-				mindex=i
-	if to_avoid_point: # if there is a point to avoid
-		var avoid_point_instructions=instruct_avoid(transform,HUD_points[mindex][0])
-		avoid_instructions[0]+=avoid_point_instructions[0]
-		avoid_instructions[1]+=avoid_point_instructions[1]
-		avoid_instructions[3]+=avoid_point_instructions[3]
-	
+		elif state.ground_memory:
+			avoid_instructions[1]=state.ground_memory # if near ground but not at a critical angle, continue turning away to avoid jittery movement
+	else:
+		state.ground_memory=0 # reset when away from ground
+
+	if avoid_instructions==[0,0,0,0]: # if there are no avoid ground instructions
+		for i in range(HUD_points.size()): # for each guy
+			var to_point=(HUD_points[i][0][2]-transform.origin).length()
+			if to_point<5: # if any are too close
+				var avoid_point_instructions=instruct_avoid(transform,HUD_points[i][0])
+				avoid_instructions[0]+=avoid_point_instructions[0]*5.0/to_point
+				avoid_instructions[1]+=avoid_point_instructions[1]*5.0/to_point
+				avoid_instructions[3]+=avoid_point_instructions[3]*5.0/to_point
+
 	if avoid_instructions!=[0,0,0,0]: # if any avoid instructions
 		instructions=avoid_instructions # override instrucions
 	
-	instructions=instructions.map(func(instruction):
-		if typeof(instruction)==4: return instruction
-		else: return cap_absolute_at_1(instruction*multiplier))
+	instructions=instructions.map(func(instruction): return cap_absolute_at_1(instruction*3)) # multiply instruction values by 3 & cap between 1/-1
 	
 	return instructions+[state]
 
@@ -155,18 +150,3 @@ static func turn(basis,roll,pitch,yaw,delta):
 	basis=basis.rotated(basis.x,pitch*delta)
 	basis=basis.rotated(basis.y,yaw*delta)
 	return basis
-
-static func shoot(shooter,missile=false,locked=null,camera=false):
-	var weapon
-	if missile:
-		weapon=shooter.get_node("/root/Main").missile_scene.instantiate()
-		weapon.target=locked
-		if camera:
-			weapon.watching=true
-	else:
-		weapon=shooter.get_node("/root/Main").bullet_scene.instantiate()
-		shooter.get_node("AudioStreamPlayer3D").play()
-		weapon.linear_velocity=shooter.transform.basis.z*100
-	weapon.transform=shooter.transform
-	weapon.position+=1.5*shooter.transform.basis.z
-	shooter.get_node("/root/Main").add_child(weapon)

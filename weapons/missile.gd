@@ -1,30 +1,31 @@
 extends RigidBody3D
 var life=10
-signal hit
-var target=null
-var target_angles=null
-var watching=false
-var silent=false
+var target
+var target_angles
+var watching
+var silent
 
 func _ready():
 	contact_monitor=true
 	max_contacts_reported=1
-	continuous_cd=true
+
+func set_up(_transform,_target,_watching,_silent=false):
+	target=_target
+	watching=_watching
+	silent=_silent
+	transform=_transform
+	position+=2*basis.z
+	life=10
+	
 	if target:
 		target.missiles_following.append(self)
-	if not silent:
-		$AudioStreamPlayer3D.play()
 
 func _physics_process(delta):
+	if get_colliding_bodies() || life<0:
+		if get_colliding_bodies() && get_colliding_bodies()[0].is_in_group("jets"):
+			get_colliding_bodies()[0]._on_missile_hit()
+		explode()
 	life-=delta
-	if life<0:
-		explode()
-	
-	if get_colliding_bodies():
-		if get_colliding_bodies()[0].is_in_group("jets"):
-			hit.connect(get_colliding_bodies()[0]._on_missile_hit)
-			hit.emit()
-		explode()
 	
 	if target:
 		target_angles=target.Jet.get_HUD_angles(transform,target.position)
@@ -47,4 +48,5 @@ func explode():
 	if target:
 		target.missiles_following.erase(self)
 	get_node("/root/Main").explosion(position,0.4,silent)
-	queue_free()
+	get_node("/root/Main").missile_pool.append(self)
+	get_node("/root/Main").remove_child(self)
