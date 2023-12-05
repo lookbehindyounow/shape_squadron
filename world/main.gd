@@ -1,10 +1,13 @@
 extends Node
 
+var jet_methods=preload("res://players/JetMethods.gd")
 var enemy_scene=preload("res://players/enemy.tscn")
 var bullet_scene=preload("res://weapons/bullet.tscn")
 var missile_scene=preload("res://weapons/missile.tscn")
 var explosion_scene=preload("res://explosions/explosion.tscn")
 var chemtrail_scene=preload("res://chemtrails/chemtrail.tscn")
+var explosion_sound=preload("res://explosions/explosion.mp3")
+var big_explosion_sound=preload("res://explosions/big_explosion.mp3")
 var enemies=[]
 var initial_enemy_count=5
 var current_camera=-1
@@ -14,12 +17,12 @@ func _ready():
 	$Music.play(MusicContinuity.playback_pos)
 	
 	# first on screen instance of these objects (even though they're hidden by obstacles) lags the thing like hell so getting it out the way immediately stops it from affecting gameplay
-	var bull=bullet_scene.instantiate()
-	var miss=missile_scene.instantiate()
-	bull.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,3,60)))
-	miss.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,4,60)),null,false,true)
-	add_child(bull)
-	add_child(miss)
+#	var bull=bullet_scene.instantiate()
+#	var miss=missile_scene.instantiate()
+#	bull.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,3,60)))
+#	miss.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,4,60)),null,false,true)
+#	add_child(bull)
+#	add_child(miss)
 	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
@@ -100,13 +103,18 @@ func missile(_transform,_target,_watching):
 	add_child(miss)
 	miss.get_node("AudioStreamPlayer3D").play()
 
-func explosion(location,life,silent=false):
-	var boom=explosion_scene.instantiate()
-	boom.life=life
-	boom.position=location
-	if silent:
-		boom.get_node("AudioStreamPlayer3D").volume_db=-100
+var explosion_pool=[]
+func explosion(_position,_life,silent=false):
+	var boom
+	if explosion_pool:
+		boom=explosion_pool[0]
+		explosion_pool.remove_at(0)
+	else:
+		boom=explosion_scene.instantiate()
+	boom.set_up(_position,_life)
 	add_child(boom)
-	
+	if not silent:
+		boom.get_node("AudioStreamPlayer3D").play()
+
 func _on_music_finished():
 	$Music.play()

@@ -27,8 +27,6 @@ func _physics_process(delta):
 	HUD_points=[]
 	for enemy in enemies:
 		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity,gaming))
-	if not gaming:
-		HUD_points=HUD_points.map(func(HUD_point): return [HUD_point[0],false])
 	
 	if Input.is_action_just_pressed("restart"):
 		get_node("/root/Main")._on_restart_pressed()
@@ -70,8 +68,8 @@ func _physics_process(delta):
 					var locked=null
 					var mindex=null
 					for j in range(HUD_points.size()):
-						if HUD_points[j][0][1]<0.3 && (HUD_points[j][0][2]-position).length()<100:
-							if mindex==null || HUD_points[j][1][1]<HUD_points[mindex][1][1]:
+						if HUD_points[j].pos.forward_angle<0.3 && HUD_points[j].pos.distance<100:
+							if mindex==null || HUD_points[j].intercept.forward_angle<HUD_points[mindex].intercept.forward_angle:
 								mindex=j
 					if mindex!=null:
 						locked=enemies[mindex]
@@ -102,8 +100,8 @@ func _physics_process(delta):
 				die()
 	else:
 		var sum=Vector3.ZERO
-		for HUD_point in HUD_points:
-			sum+=HUD_point[0][2]
+		for enemy in get_node("/root/Main").enemies:
+			sum+=enemy.position
 		ave_enemy_pos=sum/HUD_points.size()
 		transform.origin=ave_enemy_pos
 		transform.basis=transform.basis.rotated(Vector3.UP,0.02*TAU*delta)

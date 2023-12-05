@@ -4,10 +4,12 @@ var target
 var target_angles
 var watching
 var silent
+var Jet
 
 func _ready():
 	contact_monitor=true
 	max_contacts_reported=1
+	Jet=get_node("/root/Main").jet_methods
 
 func set_up(_transform,_target,_watching,_silent=false):
 	target=_target
@@ -28,11 +30,13 @@ func _physics_process(delta):
 	life-=delta
 	
 	if target:
-		target_angles=target.Jet.get_HUD_angles(transform,target.position)
-		var pitching=-4*target_angles[1]*cos(target_angles[0])
-		var yawing=-4*target_angles[1]*sin(target_angles[0])
-		transform.basis=target.Jet.turn(transform.basis,0,pitching,yawing,delta)
-		if target_angles[1]>0.65:
+		target_angles=Jet.get_HUD_angles(transform,target.position)
+		var intercept_pos=Jet.find_intercept(position,target.position,target.velocity,25,target_angles.distance)
+		var intercept_angles=Jet.get_HUD_angles(transform,intercept_pos)
+		var pitching=-4*intercept_angles.forward_angle*cos(intercept_angles.clock_face)
+		var yawing=-4*intercept_angles.forward_angle*sin(intercept_angles.clock_face)
+		basis=Jet.turn(basis,0,pitching,yawing,delta)
+		if target_angles.forward_angle>0.65: # target_angles or intercept_angles here? experiment
 			target.missiles_following.erase(self)
 			target=null
 			target_angles=null

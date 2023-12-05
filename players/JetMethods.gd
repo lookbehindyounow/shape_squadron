@@ -1,93 +1,93 @@
 static func get_HUD_angles(transform,target_pos):
+	var HUD_angles={"distance":(target_pos-transform.origin).length()}
 	# talk abuot how this is done
 	var tracking_plane=Plane(transform.origin,transform.origin+transform.basis.z,target_pos)
-	var clock_face=tracking_plane.normal.signed_angle_to(transform.basis.x,-transform.basis.z)
+	HUD_angles.clock_face=tracking_plane.normal.signed_angle_to(transform.basis.x,-transform.basis.z)
 	
 	var target_direction=(target_pos-transform.origin).normalized()
-	var forward_angle=acos(target_direction.dot(transform.basis.z))
+	HUD_angles.forward_angle=acos(target_direction.dot(transform.basis.z))
 	
-	return [clock_face,forward_angle,target_pos]
+	return HUD_angles
 
-static func track(transform,target_pos,target_velocity,enemy=true):
-	var HUD_angles=get_HUD_angles(transform,target_pos)
-	var ahead_HUD_angles=null
+static func find_intercept(position,target_pos,target_velocity,projectile_speed,target_distance):
+	var target_z=target_velocity.normalized()
+	var sin_target_angle=target_pos.direction_to(position).dot(target_z)
+	var sin_tracker_angle=target_velocity.length()*sqrt(1-(sin_target_angle**2))/projectile_speed
+	var sin_intercept_angle=sin(PI-asin(sin_tracker_angle)-acos(sin_target_angle))
+	var target_travel=target_distance*sin_tracker_angle/sin_intercept_angle
+	var intercept_pos=target_pos+target_travel*target_z
 	
-	if enemy:
-		# bullet speed is 100
-		var targToPlayer_dot_targV=(transform.origin-target_pos).normalized().dot(target_velocity.normalized())
-		var sin_target_travel_angle=target_velocity.length()*sqrt(1-(targToPlayer_dot_targV**2))/100
-		var bullet_intercept_angle=PI-asin(sin_target_travel_angle)-acos(targToPlayer_dot_targV)
-		var target_travel=sin_target_travel_angle*(transform.origin-target_pos).length()/sin(bullet_intercept_angle)
-		var bullet_intercept_pos=target_pos+target_travel*target_velocity.normalized()
-		ahead_HUD_angles=get_HUD_angles(transform,bullet_intercept_pos)
-	
-	return [HUD_angles,ahead_HUD_angles]
+	return intercept_pos
 
-static func instruct_look_at(transform,target):
-	var rolling=target[0]
-	if abs(rolling)>PI/2:
-		rolling-=PI*sign(rolling)
+static func track(transform,target_pos,target_velocity,is_enemy=true):
+	var tracking_points={"pos":get_HUD_angles(transform,target_pos)}
 	
-	var pitching=1-cos(PI*target[1]/2) # pitch based on forward angle, slight chagne from 0 while target ahead, almost exp increase til it caps at 1 when angle is 1 rad
-	# then multiplier based on target direction's dot product with left/right axis, slight change at poles & equator, speed change in middle
-	pitching*=((1-(target[2]-transform.origin).normalized().dot(transform.basis.x)**2)**2)
-	if abs(target[0])<PI/2:
-		pitching*=-1
+	if is_enemy:
+		var bullet_intercept_pos=find_intercept(transform.origin,target_pos,target_velocity,100,tracking_points.pos.distance)
+		tracking_points.intercept=get_HUD_angles(transform,bullet_intercept_pos)
 	
-	return [rolling,pitching]
+	return tracking_points
+
+static func instruct_look_at(target):
+	var instructions={"rolling":target.clock_face,"pitching":0}
+	
+	if sin(target.forward_angle)*sin(abs(target.clock_face))<0.5: # target not to side
+		instructions.pitching=-target.forward_angle
+	
+	if abs(target.clock_face)>PI/2: # target below
+		instructions.pitching*=-1
+		instructions.rolling-=PI*sign(instructions.rolling)
+	
+	return instructions
 
 static func instruct_aim(transform,target):
-	var rolling=0
-	var pitching=0
-	var yawing=0
-	var accelerating=0
+	var instructions={}
 	
-	if (target[2]-transform.origin).length()>30:
-		accelerating=1
+	if target.distance>30:
+		instructions.accelerating=1
 	
-	if target[1]<0.3: # target centrally infront
-		rolling=1-Vector3.UP.dot(transform.basis.y) # level self
+	if target.forward_angle<0.3: # target centrally infront
+		instructions.rolling=1-Vector3.UP.dot(transform.basis.y) # level self
 		if Vector3.UP.dot(transform.basis.x)>0: # if leftside up
-			rolling*=-1 # roll negative (left) to level
+			instructions.rolling*=-1 # roll negative (left) to level
 		
-		pitching=-3*target[1]*cos(target[0])
-		yawing=-3*target[1]*sin(target[0])
+		instructions.pitching=-3*target.forward_angle*cos(target.clock_face)
+		instructions.yawing=-3*target.forward_angle*sin(target.clock_face)
 	else:
-		var look_instructions=instruct_look_at(transform,target)
-		rolling=look_instructions[0]
-		pitching=look_instructions[1]
+		var look_instructions=instruct_look_at(target)
+		instructions.rolling=look_instructions.rolling
+		instructions.pitching=look_instructions.pitching
 	
-	return [rolling,pitching,yawing,accelerating]
+	return instructions
 
-static func instruct_avoid(transform,target):
-	var target_direction=(target[2]-transform.origin).normalized()
-	var rolling=target_direction.dot(transform.basis.x)
-	var accelerating=-target_direction.dot(transform.basis.z)
-	var pitching=accelerating-1 # pitching needs to be based on z for when playing chicken
+static func instruct_avoid(target):
+	var instructions={
+		"rolling":sin(target.forward_angle)*sin(target.clock_face),
+		"pitching":min(0,target.forward_angle-2)
+	}
+	if abs(target.clock_face)>PI/2: # target below
+		instructions.rolling*=-1
+		instructions.pitching*=-1
 	
-	if abs(target[0])<PI/2:
-		rolling*=-1
-		pitching*=-1
-	
-	return [rolling,pitching,0,accelerating]
+	return instructions
 
 static func instruct_missiles(transform,missiles,state):
-	var closest_dist=0
+	var min_dist=0
 	var mindex=0
 	for i in missiles.size():
-		if (transform.origin-missiles[i].position).length()<closest_dist:
-			closest_dist=(transform.origin-missiles[i].position).length()
+		var dist=transform.origin.distance_to(missiles[i].position)
+		if dist<min_dist:
+			min_dist=dist
 			mindex=i
 	
-	var look_instructions
-	if closest_dist>10:
-		look_instructions=instruct_look_at(transform,get_HUD_angles(transform,missiles[mindex].position))
-		state.missile_memory=look_instructions[1]
+	if min_dist>10:
+		state.missile_memory=instruct_look_at(get_HUD_angles(transform,missiles[mindex].position)).pitching
 	else:
 		if randf()<1.0/120:
 			state.missile_memory*=-1
-		look_instructions=[sign(999.5-Time.get_ticks_msec()%2000),state.missile_memory]
-	return [look_instructions[0],look_instructions[1],0,1,state]
+		state.instructions.rolling=sign(999.5-Time.get_ticks_msec()%2000)
+		state.instructions.pitching=state.missile_memory
+	return state
 
 static func cap_absolute_at_1(param):
 	if abs(param)>1:
@@ -97,53 +97,52 @@ static func cap_absolute_at_1(param):
 			param=-1
 	return param
 
-static func autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following):
-	var instructions=[0,0,0,0]
-	var avoid_instructions=[0,0,0,0]
-	
-	if missiles_following:
-		instructions=instruct_missiles(transform,missiles_following,state)
-		state=instructions.pop_back()
-	elif state.chasing:
-		instructions=instruct_aim(transform,HUD_points[0][1]) # aim for player's ([0]) ahead/bullet_intercept ([1])
+static func avoid_multiple(HUD_points):
+	var avoid_vector=Vector2.ZERO
+	for point in HUD_points:
+		if point.pos.distance<5: # if any are too close
+			avoid_vector-=point.pos.forward_angle*Vector2.UP.rotated(point.pos.clock_face)/point.pos.distance
+	if avoid_vector!=Vector2.ZERO:
+		var total=abs(avoid_vector.x)+abs(avoid_vector.y)
+		var instructions={"pitching":avoid_vector.y/total,"rolling":sign(-avoid_vector.y)*avoid_vector.x/total}
+		return instructions
 	else:
-		instructions=instruct_avoid(transform,HUD_points[0][0])
+		return {}
 
+static func autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_following):
+	state.instructions={}
+	
 	if transform.origin.y<1.5*speed/pitch_speed: # if near ground
-		var down_dot_myForward=Vector3.DOWN.dot(transform.basis.z)
-		if down_dot_myForward>0 && transform.origin.y<1+1.5*(speed/pitch_speed)*(1-sqrt(1-down_dot_myForward**2)): # if too near ground for current orientation
-			avoid_instructions[0]=transform.basis.x.dot(Vector3.UP) # roll positive when leftside up, roll negative when leftside down
+		var down_dot_z=Vector3.DOWN.dot(transform.basis.z)
+		if down_dot_z>0 && transform.origin.y<1+1.5*(speed/pitch_speed)*(1-sqrt(1-down_dot_z**2)): # if too near ground for current orientation
+			state.instructions.rolling=transform.basis.x.dot(Vector3.UP) # roll positive when leftside up, roll negative when leftside down
 			if transform.basis.y.dot(Vector3.UP)>0: # upright
-				avoid_instructions[0]*=-1
-				avoid_instructions[1]=-1 # pitch up when upright
+				state.instructions.rolling*=-1
+				state.instructions.pitching=-1 # pitch up when upright
 				state.ground_memory=-1
 			else:
-				avoid_instructions[1]=1 # pitch down when upsidedown
+				state.instructions.pitching=1 # pitch down when upsidedown
 				state.ground_memory=1
 				# roll negative (left) when leftside up & upright
 				# roll positive (right) when leftside down & upright
 			# roll positive (right) when leftside up & upsidedown
 			# roll negative (left) when leftside down & upsidedown
 		elif state.ground_memory:
-			avoid_instructions[1]=state.ground_memory # if near ground but not at a critical angle, continue turning away to avoid jittery movement
+			state.instructions[1]=state.ground_memory # if near ground but not at a critical angle, continue turning away to avoid jittery movement
 	else:
 		state.ground_memory=0 # reset when away from ground
-
-	if avoid_instructions==[0,0,0,0]: # if there are no avoid ground instructions
-		for i in range(HUD_points.size()): # for each guy
-			var to_point=(HUD_points[i][0][2]-transform.origin).length()
-			if to_point<5: # if any are too close
-				var avoid_point_instructions=instruct_avoid(transform,HUD_points[i][0])
-				avoid_instructions[0]+=avoid_point_instructions[0]*5.0/to_point
-				avoid_instructions[1]+=avoid_point_instructions[1]*5.0/to_point
-				avoid_instructions[3]+=avoid_point_instructions[3]*5.0/to_point
-
-	if avoid_instructions!=[0,0,0,0]: # if any avoid instructions
-		instructions=avoid_instructions # override instrucions
 	
-	instructions=instructions.map(func(instruction): return cap_absolute_at_1(instruction*3)) # multiply instruction values by 3 & cap between 1/-1
+	if state.instructions=={}: # if there are no avoid ground instructions
+		state.instructions=avoid_multiple(HUD_points)
+	if state.instructions=={} && missiles_following:
+		state=instruct_missiles(transform,missiles_following,state)
+	if state.thinking && state.instructions=={}:
+		if state.chasing:
+			state.instructions=instruct_aim(transform,HUD_points[0].intercept)
+		else:
+			state.instructions=instruct_avoid(HUD_points[0].pos)
 	
-	return instructions+[state]
+	return state
 
 static func turn(basis,roll,pitch,yaw,delta):
 	basis=basis.rotated(basis.z,roll*delta)

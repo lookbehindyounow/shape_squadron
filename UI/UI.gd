@@ -79,7 +79,7 @@ func _physics_process(delta):
 	if missile:
 		if missile.target_angles:
 			var icon=icon_scene.instantiate()
-			var point_radius=min(1,missile.target_angles[1]/0.65)
+			var point_radius=min(1,missile.target_angles.forward_angle/0.65)
 			icon.position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(missile.target_angles[0]))
 			if point_radius<1:
 				icon.set_type("locked")
@@ -95,8 +95,8 @@ func _physics_process(delta):
 			for following_missile in guy.missiles_following:
 				var missangles=guy.Jet.get_HUD_angles(guy.transform,following_missile.position)
 				var missilecon=icon_scene.instantiate()
-				var point_radius=min(1,missangles[1]/0.65)
-				missilecon.position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(missangles[0]))
+				var point_radius=min(1,missangles.forward_angle/0.65)
+				missilecon.position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(missangles.clock_face))
 				missilecon.set_type("missile")
 				missilecon.set_colour("#f80")
 				add_child(missilecon)
@@ -107,24 +107,24 @@ func _physics_process(delta):
 		for i in range(HUD_points.size()):
 			icons.append([icon_scene.instantiate()])
 			# angle between top of HUD circle & forward is 0.65 rad
-			var point_radius=min(1,HUD_points[i][0][1]/0.65)
-			icons[i][0].position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(HUD_points[i][0][0]))
+			var point_radius=min(1,HUD_points[i].pos.forward_angle/0.65)
+			icons[i][0].position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(HUD_points[i].pos.clock_face))
 			if point_radius<1:
 				icons[i][0].set_type("hollow")
-			if HUD_points[i][1]==null:
+			if not HUD_points[i].has("intercept"):
 				icons[i][0].set_colour("#00f")
 			add_child(icons[i][0])
 			
-			if HUD_points[i][1]:
-				if HUD_points[i][1][1]<0.65:
+			if HUD_points[i].has("intercept"):
+				if HUD_points[i].intercept.forward_angle<0.65:
 					icons[i].append(icon_scene.instantiate())
-					icons[i][1].position=Vector2(screen_dimensions/2)+(((HUD_points[i][1][1]/0.65)*screen_dimensions.y/2.2)*Vector2.UP.rotated(HUD_points[i][1][0]))
+					icons[i][1].position=Vector2(screen_dimensions/2)+(((HUD_points[i].intercept.forward_angle/0.65)*screen_dimensions.y/2.2)*Vector2.UP.rotated(HUD_points[i].intercept.clock_face))
 					icons[i][1].set_type("ahead")
 					add_child(icons[i][1])
 				
-				if HUD_points[i][0][1]<0.3 && (HUD_points[i][0][2]-guy.position).length()<50:
-					if mindex==null || HUD_points[i][0][1]<smallest_forward_angle:
-						smallest_forward_angle=HUD_points[i][0][1]
+				if HUD_points[i].pos.forward_angle<0.3 && HUD_points[i].pos.distance<50:
+					if mindex==null || HUD_points[i].pos.forward_angle<smallest_forward_angle:
+						smallest_forward_angle=HUD_points[i].pos.forward_angle
 						mindex=i
 		if mindex!=null:
 			icons[mindex][0].set_type("locked")
