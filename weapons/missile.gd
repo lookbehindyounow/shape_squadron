@@ -20,7 +20,7 @@ func set_up(_transform,_target,_watching,_silent=false):
 	life=10
 	
 	if target:
-		target.missiles_following.append(self)
+		target.state.missiles_following.append(self)
 
 func _physics_process(delta):
 	if get_colliding_bodies() || life<0:
@@ -37,7 +37,7 @@ func _physics_process(delta):
 		var yawing=-4*intercept_angles.forward_angle*sin(intercept_angles.clock_face)
 		basis=Jet.turn(basis,0,pitching,yawing,delta)
 		if target_angles.forward_angle>0.65: # target_angles or intercept_angles here? experiment
-			target.missiles_following.erase(self)
+			target.state.missiles_following.erase(self)
 			target=null
 			target_angles=null
 	position+=25*delta*transform.basis.z
@@ -50,7 +50,7 @@ func explode():
 	if watching:
 		get_node("/root/Main/UI").missile=null
 	if target:
-		target.missiles_following.erase(self)
+		target.state.missiles_following.erase(self)
 	get_node("/root/Main").explosion(position,0.4,silent)
 	get_node("/root/Main").missile_pool.append(self)
 	get_node("/root/Main").remove_child(self)

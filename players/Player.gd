@@ -26,7 +26,7 @@ func _physics_process(delta):
 	var enemies=get_node("/root/Main").enemies
 	HUD_points=[]
 	for enemy in enemies:
-		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity,gaming))
+		HUD_points.append(Jet.track(transform,enemy.position,enemy.velocity))
 	
 	if Input.is_action_just_pressed("restart"):
 		get_node("/root/Main")._on_restart_pressed()
