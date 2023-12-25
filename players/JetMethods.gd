@@ -80,6 +80,7 @@ static func instruct_avoid_multiple(HUD_points):
 	if avoid_vector!=Vector2.ZERO:
 		var total=abs(avoid_vector.x)+abs(avoid_vector.y)
 		var instructions={"pitching":avoid_vector.y/total,"rolling":sign(-avoid_vector.y)*avoid_vector.x/total}
+		instructions.emergency_override=true
 		return instructions
 	else:
 		return {}
@@ -107,7 +108,7 @@ static func instruct_avoid_ground(transform,speed,pitch_speed,ground_memory):
 	var down_dot_z=Vector3.DOWN.dot(transform.basis.z)
 	if down_dot_z>0 && transform.origin.y<1+1.5*(speed/pitch_speed)*(1-sqrt(1-down_dot_z**2)): # if too near ground for current orientation
 		instructions.rolling=transform.basis.x.dot(Vector3.UP) # roll positive when leftside up, roll negative when leftside down
-		if transform.basis.y.dot(Vector3.UP)>0: # upright
+		if sign(transform.basis.y.y)==1: # upright
 			instructions.rolling*=-1
 			instructions.pitching=-1 # pitch up when upright
 		else:
@@ -116,7 +117,10 @@ static func instruct_avoid_ground(transform,speed,pitch_speed,ground_memory):
 			# roll positive (right) when leftside down & upright
 		# roll positive (right) when leftside up & upsidedown
 		# roll negative (left) when leftside down & upsidedown
+		instructions.emergency_override=true
+		instructions.ground_override=true
 	elif ground_memory:
+		instructions.ground_override=false
 		instructions.pitching=ground_memory # if near ground but not at a critical angle, continue turning away to avoid jittery movement
 	
 	return instructions
@@ -129,30 +133,28 @@ static func instruct_level(transform):
 	return rolling
 
 static func autopilot(transform,speed,pitch_speed,HUD_points,state):
-	var emergency_override=false
-	
+	state.instructions.erase("ground_override")
 	if transform.origin.y<1.5*speed/pitch_speed: # if near ground
 		var temp_instructions=instruct_avoid_ground(transform,speed,pitch_speed,state.ground_memory)
 		if temp_instructions:
 			state.instructions=temp_instructions
-			state.ground_memory=state.instructions.pitching
-			emergency_override=true
+			state.ground_memory=temp_instructions.pitching
 	elif state.ground_memory: # after away from ground, reset ground memory
 		state.ground_memory=0
 	
-	if !emergency_override: # if there are no avoid ground instructions
+	if !state.instructions.has("emergency_override"): # if there are no avoid ground instructions
 		var temp_instructions=instruct_avoid_multiple(HUD_points)
 		if temp_instructions: # if there are planes in close proximity
 			state.instructions=temp_instructions
-			emergency_override=true
 	
-	if !emergency_override && state.missiles_following: # if no avoid instructions & missiles are following
+	if !state.instructions.has("emergency_override") && state.missiles_following: # if no avoid instructions & missiles are following
 		state=instruct_evade_missiles(transform,state)
+		state.instructions.emergency_override=true
 	
 	var target_distance=HUD_points[0].pos.distance
 	
 	if state.thinking: # every 5 or 6 frames
-		if !emergency_override: # if no avoid/evade instructions
+		if !state.instructions.has("emergency_override"): # if no avoid/evade instructions
 			if state.chasing:
 				state.instructions=instruct_aim(HUD_points[0].intercept)
 			else:

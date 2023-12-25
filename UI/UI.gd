@@ -80,7 +80,7 @@ func _physics_process(delta):
 		if missile.target_angles:
 			var icon=icon_scene.instantiate()
 			var point_radius=min(1,missile.target_angles.forward_angle/0.65)
-			icon.position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(missile.target_angles[0]))
+			icon.position=Vector2(screen_dimensions/2)+((point_radius*screen_dimensions.y/2.2)*Vector2.UP.rotated(missile.target_angles.clock_face))
 			if point_radius<1:
 				icon.set_type("locked")
 			icons.append([icon])

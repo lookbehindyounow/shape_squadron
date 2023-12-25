@@ -1,7 +1,7 @@
 extends RigidBody3D
 var life=10
 var target
-var target_angles
+var target_angles={}
 var watching
 var silent
 var Jet

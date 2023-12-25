@@ -37,6 +37,7 @@ var state={
 	"missile_memory":-1,
 	"ground_memory":0
 }
+var missiles_following=state.missiles_following
 
 func _physics_process(delta):
 	var player=get_node("/root/Main/Player")
@@ -65,6 +66,8 @@ func _physics_process(delta):
 			HUD_points.append(Jet.track(transform,ally.position))
 		
 		state=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state) # change to just point locations (& ahead locations for enemies)
+		if state.instructions.has("ground_override"):
+			print("guy ",get_node("/root/Main").enemies.find(self),", upright: ",sign(basis.y.y)==1,", ground_override: ",state.instructions.ground_override,", pitching: ",state.instructions.pitching,", t=",Time.get_ticks_msec()," - height: ",position.y,", xy: ",Vector2(position.x,position.z))
 		
 		if state.instructions.shooting:
 			if cooldown<0:

@@ -38,6 +38,7 @@ func _unhandled_input(event):
 func _on_enemy_die(dead):
 	for i in range(enemies.size()):
 		if enemies[i]==dead:
+			print("guy ",i," died - t=",Time.get_ticks_msec())
 			enemies.remove_at(i)
 			if current_camera>=i:
 				current_camera-=1
