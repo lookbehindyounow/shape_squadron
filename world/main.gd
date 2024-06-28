@@ -23,7 +23,8 @@ func _ready():
 	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
-		enemies[i].transform.origin=Vector3(i*50.0/initial_enemy_count,10,0)
+		enemies[i].transform.origin=Vector3(0,10,20)
+		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(i+1)*(PI/2)/(initial_enemy_count+1))
 		add_child(enemies[i])
 	current_camera=initial_enemy_count-1
 	update_camera()
