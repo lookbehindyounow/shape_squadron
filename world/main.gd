@@ -9,7 +9,7 @@ var chemtrail_scene=preload("res://chemtrails/chemtrail.tscn")
 var explosion_sound=preload("res://explosions/explosion.mp3")
 var big_explosion_sound=preload("res://explosions/big_explosion.mp3")
 var enemies=[]
-var initial_enemy_count=5
+var initial_enemy_count=1#5
 var current_camera=-1
 var gaming=true
 
@@ -30,6 +30,7 @@ func _ready():
 		add_child(enemies[i])
 	current_camera=initial_enemy_count-1
 	update_camera()
+	update_camera()
 
 func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_camera") && event.pressed:
@@ -38,7 +39,6 @@ func _unhandled_input(event):
 func _on_enemy_die(dead):
 	for i in range(enemies.size()):
 		if enemies[i]==dead:
-			print("guy ",i," died - t=",Time.get_ticks_msec())
 			enemies.remove_at(i)
 			if current_camera>=i:
 				current_camera-=1

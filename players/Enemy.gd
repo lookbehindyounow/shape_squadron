@@ -35,7 +35,8 @@ var state={
 	"state_duration":0,
 	"missiles_following":[],
 	"missile_memory":-1,
-	"ground_memory":0
+	"ground_memory":0,
+	"ray":PhysicsRayQueryParameters3D.create(Vector3.ZERO,Vector3.ZERO,collision_mask,[self])
 }
 var missiles_following=state.missiles_following
 
@@ -56,6 +57,8 @@ func _physics_process(delta):
 		state.gaming=get_node("/root/Main").gaming
 		if state.gaming:
 			HUD_points=[Jet.track(transform,player.position,player.velocity)]
+			var underground_targ=Jet.get_HUD_angles(transform,Vector3(0,-100,0))
+			HUD_points=[{"pos":underground_targ,"intercept":underground_targ}]
 		else: # when player dies, have a spoof player in HUD_points for autopilot to direct to
 			var horizon=Jet.get_HUD_angles(transform,player.ave_enemy_pos+Vector3(100,0,0))
 			HUD_points=[{"pos":horizon,"intercept":horizon}]
@@ -65,9 +68,7 @@ func _physics_process(delta):
 		for ally in allies:
 			HUD_points.append(Jet.track(transform,ally.position))
 		
-		state=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state) # change to just point locations (& ahead locations for enemies)
-		if state.instructions.has("ground_override"):
-			print("guy ",get_node("/root/Main").enemies.find(self),", upright: ",sign(basis.y.y)==1,", ground_override: ",state.instructions.ground_override,", pitching: ",state.instructions.pitching,", t=",Time.get_ticks_msec()," - height: ",position.y,", xy: ",Vector2(position.x,position.z))
+		state=Jet.autopilot(transform,speed,pitch_speed,HUD_points,state,self) # change to just point locations (& ahead locations for enemies)
 		
 		if state.instructions.shooting:
 			if cooldown<0:
@@ -92,16 +93,25 @@ func _physics_process(delta):
 		pitch_momentum=(7.0*pitch_momentum+state.instructions.pitching)/8
 		yaw_momentum=(7.0*yaw_momentum+state.instructions.yawing)/8
 		
+#		if state.instructions.has("ground_override"):
+#			print()
+#			print("guy ",get_node("/root/Main").enemies.find(self),", upright: ",sign(basis.y.y)==1,", ground_override: ",state.instructions.ground_override,", pitching: ",state.instructions.pitching,", t=",Time.get_ticks_msec()," - height: ",position.y,", xy: ",Vector2(position.x,position.z))
+#			print(pitch_momentum)
+		
 		speed=min(max(speed+(state.instructions.accelerating*acceleration*delta),5),top_speed)
-		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
+#		if state.instructions.has("ground_override"):
+#			print(basis)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta,state.instructions.has("ground_override"))
+#		if state.instructions.has("ground_override"):
+#			print(basis)
 		velocity=transform.basis.z*speed
 		move_and_slide()
-
+		
 		chemtrail_counter+=1
 		if chemtrail_counter>7:
 			chemtrail_counter=0
 			get_node("/root/Main").chemtrail(transform)
-	
+		
 		if !state.gaming: # remove spoof player from HUD points so it doesn't show up on enemies HUD when rendered in UI
 			HUD_points.remove_at(0)
 	
