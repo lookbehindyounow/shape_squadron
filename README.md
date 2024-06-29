@@ -1,12 +1,11 @@
 # Shape Squadron
 ### flying triangle dogfight game
-To play you will need the [Godot 4 engine](https://godotengine.org/download)  
-Clone this repo, open the engine, click the scan button, navigate to the shape_squadron folder & click project.godot.
-Once the game is in your project list, open it & click the play button in the top right
+If you just wanna play the game you can [download a dmg/exe](https://lookbehindyounow.itch.io/shape-squadron)\
+To edit you will need the [Godot 4 engine](https://godotengine.org/download) - clone this repo, open the launcher, click the scan button, navigate to the shape_squadron folder & click project.godot, once the game is in your project list, open it & click the play button in the top right.
 
 ### Controls
 Some of the keyboard controls are quite odd, this is becuase most of the testing has been done on a mac without a mouse.
-Controls can be changed in project > project settings > input map.  
+Controls can be changed in project > project settings > input map (you can't change them in the executable versions).\
 If Godot is not correctly recognising your gamepad's buttons, you could try creating a new mapping for your gamepad with [this](https://generalarcade.com/gamepadtool/), it worked for me
 Action|Keyboard|Gamepad
 -|-|-
