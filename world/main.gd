@@ -13,18 +13,10 @@ var gaming=true
 func _ready():
 	$Music.play(MusicContinuity.playback_pos)
 	
-	# first on screen instance of these objects (even though they're hidden by obstacles) lags the thing like hell so getting it out the way immediately stops it from affecting gameplay
-	var bull=bullet_scene.instantiate()
-	var miss=missile_scene.instantiate()
-	bull.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,3,60)))
-	miss.set_up(Transform3D(Vector3.LEFT,Vector3.FORWARD,Vector3.DOWN,Vector3(60,4,60)),null,false,true)
-	add_child(bull)
-	add_child(miss)
-	
 	for i in range(initial_enemy_count):
 		enemies.append(enemy_scene.instantiate())
-		enemies[i].transform.origin=Vector3(0,10,20)
-		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(i+1)*(PI/2)/(initial_enemy_count+1))
+		enemies[i].transform.origin=Vector3(0,5.4,20)
+		enemies[i].transform=enemies[i].transform.rotated(Vector3.UP,(i+0.5)*(PI/2)/(initial_enemy_count))
 		add_child(enemies[i])
 	current_camera=initial_enemy_count-1
 	update_camera()

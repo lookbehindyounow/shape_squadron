@@ -109,7 +109,7 @@ static func autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_foll
 	else:
 		instructions=instruct_avoid(transform,HUD_points[0][0])
 
-	if transform.origin.y<1.5*speed/pitch_speed: # if near ground
+	if transform.origin.y<1+1.5*speed/pitch_speed: # if near ground
 		var down_dot_myForward=Vector3.DOWN.dot(transform.basis.z)
 		if down_dot_myForward>0 && transform.origin.y<1+1.5*(speed/pitch_speed)*(1-sqrt(1-down_dot_myForward**2)): # if too near ground for current orientation
 			avoid_instructions[0]=transform.basis.x.dot(Vector3.UP) # roll positive when leftside up, roll negative when leftside down
@@ -128,16 +128,21 @@ static func autopilot(transform,speed,pitch_speed,HUD_points,state,missiles_foll
 			avoid_instructions[1]=state.ground_memory # if near ground but not at a critical angle, continue turning away to avoid jittery movement
 	else:
 		state.ground_memory=0 # reset when away from ground
-
-	if avoid_instructions==[0,0,0,0]: # if there are no avoid ground instructions
-		for i in range(HUD_points.size()): # for each guy
-			var to_point=(HUD_points[i][0][2]-transform.origin).length()
-			if to_point<5: # if any are too close
-				var avoid_point_instructions=instruct_avoid(transform,HUD_points[i][0])
-				avoid_instructions[0]+=avoid_point_instructions[0]*5.0/to_point
-				avoid_instructions[1]+=avoid_point_instructions[1]*5.0/to_point
-				avoid_instructions[3]+=avoid_point_instructions[3]*5.0/to_point
-
+	
+	var mindex=0
+	var to_avoid_point=null
+	for i in range(HUD_points.size()):
+		var to_point=(HUD_points[i][0][2]-transform.origin)
+		if to_point.length()<randf_range(4,7): # if any are too close
+			if to_avoid_point==null || (to_point.length()<to_avoid_point.length()):
+				to_avoid_point=to_point
+				mindex=i
+	if to_avoid_point: # if there is a point to avoid
+		var avoid_point_instructions=instruct_avoid(transform,HUD_points[mindex][0])
+		avoid_instructions[0]+=avoid_point_instructions[0]
+		avoid_instructions[1]+=avoid_point_instructions[1]
+		avoid_instructions[3]+=avoid_point_instructions[3]
+	
 	if avoid_instructions!=[0,0,0,0]: # if any avoid instructions
 		instructions=avoid_instructions # override instrucions
 	

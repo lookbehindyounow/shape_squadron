@@ -9,14 +9,13 @@ const yaw_speed=1
 var speed=15
 var hits_taken=0
 var crashes=0
-var cooldown=0
+var cooldown=-1
 var missiles=2
-var missile_cooldown=0
+var missile_cooldown=-1
 var missiles_following=[]
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
-var yaw_momentum=0
 var chemtrail_counter=0
 
 signal die
@@ -28,7 +27,7 @@ func _unhandled_input(event):
 	if InputMap.event_is_action(event,"toggle_chillin") && event.pressed:
 		chillin=not chillin
 
-var state={"chasing":true,"chase_duration":0,"missile_memory":-1,"ground_memory":0}
+var state={"chasing":true,"chase_duration":0,"missile_memory":-1,"ground_memory":-1}
 var prev_targ_dist=0
 
 func _physics_process(delta):
@@ -87,10 +86,9 @@ func _physics_process(delta):
 		
 		roll_momentum=(7.0*roll_momentum+instructions[0])/8
 		pitch_momentum=(7.0*pitch_momentum+instructions[1])/8
-		yaw_momentum=(7.0*yaw_momentum+instructions[2])/8
 		
 		speed=min(max(speed+(instructions[3]*acceleration*delta),5),top_speed)
-		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,instructions[2]*yaw_speed,delta)
 		velocity=transform.basis.z*speed
 
 		chemtrail_counter+=1
