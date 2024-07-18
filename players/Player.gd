@@ -9,10 +9,10 @@ const yaw_speed=0.2
 var speed=top_speed
 var hits_taken=0
 var crashes=0
-var cooldown=0
+var cooldown=-1
 var missiles=10
-var missile_cooldowns=[0,0]
-var missiles_following=[]
+var missile_cooldowns=[-1,-1]
+var state={"missiles_following":[]}
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
@@ -124,9 +124,9 @@ func _on_missile_hit():
 		get_node("/root/Main/UI").flash(0.3)
 
 func die():
-	for missile in missiles_following:
+	for missile in state.missiles_following:
 		missile.target=null
-	missiles_following=[]
+	state.missiles_following=[]
 	health=0
 	get_node("/root/Main").gaming=false
 	get_node("/root/Main/UI/Endgame").text="We got em boys - away home to bed :)"

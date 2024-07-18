@@ -9,9 +9,9 @@ const yaw_speed=1
 var speed=15
 var hits_taken=0
 var crashes=0
-var cooldown=0
+var cooldown=-1
 var missiles=2
-var missile_cooldown=0
+var missile_cooldown=-1
 var HUD_points=[]
 var roll_momentum=0
 var pitch_momentum=0
@@ -35,7 +35,8 @@ var state={
 	"state_duration":0,
 	"missiles_following":[],
 	"missile_memory":-1,
-	"ground_memory":0,
+	"ground_memory":-1,
+	"emergency_override":false,
 	"ray":PhysicsRayQueryParameters3D.create(Vector3.ZERO,Vector3.ZERO,collision_mask,[self])
 }
 var missiles_following=state.missiles_following
@@ -57,8 +58,6 @@ func _physics_process(delta):
 		state.gaming=get_node("/root/Main").gaming
 		if state.gaming:
 			HUD_points=[Jet.track(transform,player.position,player.velocity)]
-			var underground_targ=Jet.get_HUD_angles(transform,Vector3(0,-100,0))
-			HUD_points=[{"pos":underground_targ,"intercept":underground_targ}]
 		else: # when player dies, have a spoof player in HUD_points for autopilot to direct to
 			var horizon=Jet.get_HUD_angles(transform,player.ave_enemy_pos+Vector3(100,0,0))
 			HUD_points=[{"pos":horizon,"intercept":horizon}]
@@ -93,18 +92,9 @@ func _physics_process(delta):
 		pitch_momentum=(7.0*pitch_momentum+state.instructions.pitching)/8
 		yaw_momentum=(7.0*yaw_momentum+state.instructions.yawing)/8
 		
-#		if state.instructions.has("ground_override"):
-#			print()
-#			print("guy ",get_node("/root/Main").enemies.find(self),", upright: ",sign(basis.y.y)==1,", ground_override: ",state.instructions.ground_override,", pitching: ",state.instructions.pitching,", t=",Time.get_ticks_msec()," - height: ",position.y,", xy: ",Vector2(position.x,position.z))
-#			print(pitch_momentum)
-		
 		speed=min(max(speed+(state.instructions.accelerating*acceleration*delta),5),top_speed)
-#		if state.instructions.has("ground_override"):
-#			print(basis)
-		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta,state.instructions.has("ground_override"))
-#		if state.instructions.has("ground_override"):
-#			print(basis)
-		velocity=transform.basis.z*speed
+		transform.basis=Jet.turn(transform.basis,roll_momentum*roll_speed,pitch_momentum*pitch_speed,yaw_momentum*yaw_speed,delta)
+		velocity=transform.basis.z*speed#*0.2
 		move_and_slide()
 		
 		chemtrail_counter+=1

@@ -8,9 +8,9 @@ bottom_radius = 0.01
 height = 0.05
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6cppn"]
+transparency = 1
+shading_mode = 0
 albedo_color = Color(1, 0.576471, 0, 1)
-emission_enabled = true
-emission = Color(1, 0.576471, 0, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mr3yr"]
 size = Vector3(0.01, 1.667, 0.01)

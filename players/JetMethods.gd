@@ -112,86 +112,59 @@ static func instruct_avoid_ground(transform,speed,pitch_speed,ground_memory,call
 	var ray=caller.state.ray
 	var basis=caller.transform.basis
 	var space=caller.get_world_3d().direct_space_state
-	var lookahead=5
-	var padding=0.5
+	var lookahead=15
+	var samples=8
+	var lookout=1
 	
 	# these vectors, when added to a central point, make up the rectangle being cast
-	var shape_to_cast=[
-		(0.5+padding)*basis.x+(0.25+padding)*basis.y,
-		(0.25+padding)*basis.y,
-		(0.25+padding)*basis.y-(0.5+padding)*basis.x,
-		
-		(0.5+padding)*basis.x,
-		Vector3.ZERO,
-		-(0.5+padding)*basis.x,
-		
-		(0.5+padding)*basis.x-(0.25+padding)*basis.y,
-		-(0.25+padding)*basis.y,
-		-(0.5+padding)*basis.x-(0.25+padding)*basis.y
-	]
 	ray.from=pos
 	var obstacles=[]
-	var clear=true
-	for corner in shape_to_cast:
-		ray.to=pos+(lookahead*basis.z)+corner # setting ray
+	var common_obstacle=null
+	for sample in samples:
+		ray.to=pos+(lookahead*basis.z)+lookout*basis.y.rotated(basis.z,sample*2*PI/samples) # setting ray
 		obstacles.append(space.intersect_ray(ray)) # casting ray
 		if obstacles[-1]:
-			clear=false
+			if common_obstacle==null: # set common obstacle to the first obstacle hit
+				common_obstacle=obstacles[-1].collider_id
+			elif common_obstacle!=obstacles[-1].collider_id:
+				common_obstacle=0 # if there is more than 1 obstacle
 	
-	if not clear: # if obstacle(s) present
-		var common_obstacle=null
-		for obstacle in obstacles: # for the result of each ray cast
-			if obstacle: # if said ray hit an object
-				if common_obstacle==null: # set common obstacle to the first obstacle hit
-					common_obstacle=obstacle.collider_id
-				elif common_obstacle!=obstacle.collider_id:
-					common_obstacle=false # if there is more than 1 obstacle
-					break
+	caller.state.erase("avoid_vec")
+	caller.state.avoid_vecs=[]
+	var avoid_vector=Vector3.ZERO
+	if false && common_obstacle:
 		
-		# common_obstacle will never be null at this point
-		if common_obstacle: # avoid single/general obstacle
-			var avoid_vector=Vector3.ZERO
-			var view_plane=Plane(basis.z,pos)
-			for obstacle in obstacles:
-				if obstacle:
-					var to_me=pos-obstacle.position
-					var squished_to_me=pos-view_plane.project(obstacle.position)
-					squished_to_me/=squished_to_me.dot(squished_to_me)
-					
-			# for each corner, (1/dist^2)*(collision_pos→pos)+obstacle_normal
-			# average/add together
-			# convert direction to instructions
-		else:
-			pass # avoid multiple obstacles
+		caller.state.avoid_vecs.append(Vector2.ZERO)
+		
+		for sample in samples:
+			if obstacles[sample]:
+				
+				caller.state.avoid_vecs.append(0.3*Vector2.UP.rotated(sample*2*PI/samples))
+				
+				avoid_vector-=basis.y.rotated(basis.z,sample*2*PI/samples)
+				avoid_vector+=obstacles[sample].normal*basis/samples
+	elif common_obstacle!=null || common_obstacle==0: # avoid multiple obstacles # avoid single/general obstacle
+		for obstacle in obstacles:
+			if obstacle:
+				var avoid_point=pos-obstacle.position # vector in opposite direction from obstacle
+				
+				var test=avoid_point*basis
+				test=Vector2(test.x,test.y)
+				caller.state.avoid_vecs.append(test)
+				
+				avoid_point/=avoid_point.dot(avoid_point) # the closer the potential collision, the greater the avoid vector
+				avoid_vector+=avoid_point # add together for each obstacle
+	avoid_vector*=basis # traslate vector coefficients to caller pov
+	avoid_vector=Vector2(avoid_vector.x,avoid_vector.y) # remove z component to flatten in view plane
+	caller.state.avoid_vec=avoid_vector
+	caller.state.emergency_override=true
+	var total=abs(avoid_vector.x)+abs(avoid_vector.y)
+	if total==0: total=1
+	return {"pitching":-avoid_vector.y/total,"rolling":sign(-avoid_vector.y)*avoid_vector.x/total}
 	
 	# this is using the shape of the shape cast for a collision course
 	# but the common_obstacle bit is more suited to a wider shape of potential paths
 	# as it's more focused on making decisions for how to avoid multiple obstacles
-
-static func instruct_avoid_ground_old(transform,speed,pitch_speed,ground_memory,caller):
-	var instructions={}
-	var down_dot_z=Vector3.DOWN.dot(transform.basis.z)
-	if down_dot_z>0 && transform.origin.y<1+1.5*(speed/pitch_speed)*(1-sqrt(1-down_dot_z**2)):
-		# if down_dot_z>0 then nose vect is down
-		# sqrt(1-down_dot_z**2) = sin(θ) where θ is angle between down vect & nose vect
-		# if too near ground for current orientation
-		instructions.rolling=transform.basis.x.dot(Vector3.UP) # roll positive when leftside up, roll negative when leftside down
-		if sign(transform.basis.y.y)==1: # upright
-			instructions.rolling*=-1
-			instructions.pitching=-1 # pitch up when upright
-		else:
-			instructions.pitching=1 # pitch down when upsidedown
-		# roll negative (left) when leftside up & upright
-		# roll positive (right) when leftside down & upright
-		# roll positive (right) when leftside up & upsidedown
-		# roll negative (left) when leftside down & upsidedown
-		instructions.emergency_override=true
-		instructions.ground_override=true
-	elif ground_memory:
-		instructions.ground_override=false
-		instructions.pitching=ground_memory # if near ground but not at a critical angle, continue turning away to avoid jittery movement
-	
-	return instructions
 
 static func instruct_level(transform):
 	var rolling=1-Vector3.UP.dot(transform.basis.y) # level self
@@ -201,8 +174,8 @@ static func instruct_level(transform):
 	return rolling
 
 static func autopilot(transform,speed,pitch_speed,HUD_points,state,caller):
-	state.instructions.erase("ground_override")
-	if transform.origin.y<1.5*speed/pitch_speed: # if near ground
+	state.instructions={}
+	if !state.emergency_override:
 		var temp_instructions=instruct_avoid_ground(transform,speed,pitch_speed,state.ground_memory,caller)
 		if temp_instructions:
 			state.instructions=temp_instructions
@@ -210,20 +183,18 @@ static func autopilot(transform,speed,pitch_speed,HUD_points,state,caller):
 	elif state.ground_memory: # after away from ground, reset ground memory
 		state.ground_memory=0
 	
-	if !state.instructions.has("emergency_override"): # if there are no avoid ground instructions
-		var temp_instructions=instruct_avoid_multiple(HUD_points)
-		if temp_instructions: # if there are planes in close proximity
-			state.instructions=temp_instructions
-#	else:
-#		print(state.instructions.emergency_override)
+#	if !state.instructions.has("emergency_override"): # if there are no avoid ground instructions
+#		var temp_instructions=instruct_avoid_multiple(HUD_points)
+#		if temp_instructions: # if there are planes in close proximity
+#			state.instructions=temp_instructions
 	
-	if !state.instructions.has("emergency_override") && state.missiles_following: # if no avoid instructions & missiles are following
+	if !state.emergency_override && state.missiles_following: # if no avoid instructions & missiles are following
 		state=instruct_evade_missiles(transform,state)
 		state.instructions.emergency_override=true
 	
 	var target_distance=HUD_points[0].pos.distance
 	
-	if state.thinking: # every 5 or 6 frames
+	if false && state.thinking: # every 5 or 6 frames
 		if !state.instructions.has("emergency_override"): # if no avoid/evade instructions
 			if state.chasing:
 				state.instructions=instruct_aim(HUD_points[0].intercept)
@@ -263,12 +234,8 @@ static func cap_absolute_at_1(param):
 		param=sign(param)
 	return param
 
-static func turn(basis,roll,pitch,yaw,delta,display=false):
-#	if display:
-#		print(basis)
+static func turn(basis,roll,pitch,yaw,delta):
 	basis=basis.rotated(basis.z,roll*delta)
 	basis=basis.rotated(basis.x,pitch*delta)
 	basis=basis.rotated(basis.y,yaw*delta)
-#	if display:
-#		print(basis)
 	return basis

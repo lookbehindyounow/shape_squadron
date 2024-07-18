@@ -17,4 +17,5 @@ func _physics_process(delta):
 			get_colliding_bodies()[0]._on_bullet_hit()
 		get_node("/root/Main").bullet_pool.append(self)
 		get_node("/root/Main").remove_child(self)
+		angular_velocity=Vector3.ZERO
 	life-=delta

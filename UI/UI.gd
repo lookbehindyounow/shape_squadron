@@ -53,6 +53,15 @@ func _draw():
 		var number_pos=centre+12*Vector2.DOWN+(screen_dimensions.y/6.6)*height.rotated(gyro_angle_momentum) # altitude reading
 		draw_char(font,number_pos+30*Vector2.LEFT,str(10*round(altitude/10.0))[0],40,Color("#0f0"))
 		draw_char(font,number_pos,(str(10*round(altitude/10.0))+"0")[1],40,Color("#0f0"))
+		
+		if "state" in guy && guy.state.has("avoid_vec"):
+			var theta=guy.state.avoid_vec
+			draw_line(centre,centre-screen_dimensions.y/2.2*guy.state.avoid_vec.normalized(),Color("fff"),3)
+			for i in guy.state.avoid_vecs:
+				if i==Vector2.ZERO:
+					draw_arc(centre,50,0,2*PI,9,Color("#fff"))
+				else:
+					draw_circle(centre+i*200,10,Color("#fff"))
 
 func _ready():
 	guy=get_node("/root/Main/Player")
@@ -91,8 +100,8 @@ func _physics_process(delta):
 			missile=null
 	else:
 		var HUD_points=guy.HUD_points
-		if Time.get_ticks_msec()%100<50:
-			for following_missile in guy.missiles_following:
+		for following_missile in guy.state.missiles_following:
+			if Time.get_ticks_msec()%100<50:
 				var missangles=guy.Jet.get_HUD_angles(guy.transform,following_missile.position)
 				var missilecon=icon_scene.instantiate()
 				var point_radius=min(1,missangles.forward_angle/0.65)
@@ -128,6 +137,7 @@ func _physics_process(delta):
 						mindex=i
 		if mindex!=null:
 			icons[mindex][0].set_type("locked")
+	
 	queue_redraw()
 
 func flash(amount):
