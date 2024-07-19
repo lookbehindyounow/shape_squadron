@@ -35,7 +35,8 @@ var state={
 	"state_duration":0,
 	"missiles_following":[],
 	"missile_memory":-1,
-	"ground_memory":-1,
+	"avoid_memory":Vector2.ZERO,
+	"avoid_points":[],
 	"emergency_override":false,
 	"ray":PhysicsRayQueryParameters3D.create(Vector3.ZERO,Vector3.ZERO,collision_mask,[self])
 }

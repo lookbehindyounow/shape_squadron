@@ -54,10 +54,9 @@ func _draw():
 		draw_char(font,number_pos+30*Vector2.LEFT,str(10*round(altitude/10.0))[0],40,Color("#0f0"))
 		draw_char(font,number_pos,(str(10*round(altitude/10.0))+"0")[1],40,Color("#0f0"))
 		
-		if "state" in guy && guy.state.has("avoid_vec"):
-			var theta=guy.state.avoid_vec
-			draw_line(centre,centre-screen_dimensions.y/2.2*guy.state.avoid_vec.normalized(),Color("fff"),3)
-			for i in guy.state.avoid_vecs:
+		if guy.state.avoid_memory:
+			draw_line(centre,centre-screen_dimensions.y/2.2*guy.state.avoid_memory.normalized(),Color("fff"),3)
+			for i in guy.state.avoid_points:
 				if i==Vector2.ZERO:
 					draw_arc(centre,50,0,2*PI,9,Color("#fff"))
 				else:
